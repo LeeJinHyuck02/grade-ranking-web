@@ -102,7 +102,6 @@ export default function UniversityDetailPage() {
     setMounted(true);
   }, []);
 
-  // 1. 대학교 데이터 일괄 호출
   useEffect(() => {
     async function fetchUnivData() {
       if (!univName) return;
@@ -145,12 +144,10 @@ export default function UniversityDetailPage() {
     fetchUnivData();
   }, [univName]);
 
-  // 2. 현재 선택된 교과 구분에 맞는 요약 카드 통계 추출
   const currentSummary = useMemo(() => {
     return univSummaries.find((s) => s.course_type.trim() === courseFilter) || null;
   }, [univSummaries, courseFilter]);
 
-  // 3. 선택된 교과 구분에 따른 좌측 등급 분포 차트 데이터 가공
   const gradeDistData: GradeDist[] = useMemo(() => {
     let targetList: GradeRow[] = [];
 
@@ -179,7 +176,6 @@ export default function UniversityDetailPage() {
       }));
   }, [rawMajorGrades, rawGeneralGrades, courseFilter]);
 
-  // 4. 교양 전용 학기별 데이터 집계 및 정밀 시계열 정렬
   const generalSemesterChartData = useMemo(() => {
     const semesterMap: { [key: string]: { year: number; semName: string; totalWeighted: number; totalCount: number; aCount: number } } = {};
 
@@ -224,7 +220,6 @@ export default function UniversityDetailPage() {
       });
   }, [rawGeneralGrades]);
 
-  // 5. 상위 10개 학과 차트 데이터 (정렬 기준 적용)
   const topDeptsChartData = useMemo(() => {
     const sorted = [...deptRankings].sort((a, b) => {
       if (sortBy === 'avg_gpa') {
@@ -253,13 +248,16 @@ export default function UniversityDetailPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '40px 20px', transition: 'background-color 0.2s' }}>
-      <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '24px 16px', boxSizing: 'border-box', overflowX: 'hidden', transition: 'background-color 0.2s' }}>
+      <div style={{ maxWidth: '1120px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', boxSizing: 'border-box' }}>
         
         {/* 상단 네비게이션 헤더 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '20px' }}>
-          <div>
-            <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '4px 0 0 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', gap: '12px' }}>
+          <div style={{ minWidth: 0 }}>
+            <a href="/" style={{ fontSize: '13px', color: 'var(--accent-blue)', textDecoration: 'none', marginBottom: '6px', display: 'inline-block', fontWeight: '500' }}>
+              ← 전체 리더보드로 돌아가기
+            </a>
+            <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '2px 0 0 0', wordBreak: 'keep-all' }}>
               {univName} 종합 학점 분석 리포트
             </h1>
           </div>
@@ -267,22 +265,22 @@ export default function UniversityDetailPage() {
         </div>
 
         {/* 교과목 구분 선택 탭 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', gap: '6px', backgroundColor: 'var(--border-color)', padding: '4px', borderRadius: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--border-color)', padding: '3px', borderRadius: '8px' }}>
             {(['전체', '전공', '교양'] as const).map((type) => (
               <button
                 key={type}
                 onClick={() => setCourseFilter(type)}
                 style={{
-                  padding: '8px 18px',
-                  fontSize: '14px',
+                  padding: '6px 14px',
+                  fontSize: '13px',
                   fontWeight: '600',
                   borderRadius: '6px',
                   border: 'none',
                   cursor: 'pointer',
                   backgroundColor: courseFilter === type ? 'var(--card-bg)' : 'transparent',
                   color: courseFilter === type ? 'var(--accent-blue)' : 'var(--text-muted)',
-                  boxShadow: courseFilter === type ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                  boxShadow: courseFilter === type ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
                   transition: 'all 0.15s ease'
                 }}
               >
@@ -291,188 +289,192 @@ export default function UniversityDetailPage() {
             ))}
           </div>
 
-          <div style={{ fontSize: '14px', color: 'var(--text-muted)' }}>
-            분석 대상: <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{courseFilter === '전체' ? '전교 전체 교과목' : `${courseFilter} 교과목`}</span>
+          <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+            분석 대상: <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{courseFilter === '전체' ? '전체 교과목' : `${courseFilter} 교과목`}</span>
           </div>
         </div>
 
-        {/* 핵심 KPI 요약 카드 그리드 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
-          <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 8px 0', fontWeight: '500' }}>
+        {/* 핵심 KPI 카드 그리드 */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '16px', width: '100%', boxSizing: 'border-box' }}>
+          <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 6px 0', fontWeight: '500' }}>
               {courseFilter} 평균 평점
             </p>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--accent-blue)', margin: 0 }}>
-              {currentSummary ? currentSummary.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '16px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
+            <p style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)', margin: 0 }}>
+              {currentSummary ? currentSummary.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
             </p>
           </div>
-          <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 8px 0', fontWeight: '500' }}>
+          <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 6px 0', fontWeight: '500' }}>
               {courseFilter} A학점 비율
             </p>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--accent-green)', margin: 0 }}>
+            <p style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-green)', margin: 0 }}>
               {currentSummary && currentSummary.a_grade_ratio !== null ? `${currentSummary.a_grade_ratio.toFixed(1)}%` : '0.0%'}
             </p>
           </div>
-          <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 8px 0', fontWeight: '500' }}>개설 학과 수</p>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>
+          <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 6px 0', fontWeight: '500' }}>개설 학과 수</p>
+            <p style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>
               {courseFilter === '교양' ? '-' : `${currentSummary ? currentSummary.total_depts : 0}개`}
             </p>
           </div>
-          <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 8px 0', fontWeight: '500' }}>
+          <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 6px 0', fontWeight: '500' }}>
               {courseFilter} 수강 학생 수
             </p>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>
+            <p style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>
               {currentSummary ? currentSummary.total_students.toLocaleString() : 0}명
             </p>
           </div>
         </div>
 
-        {/* 시각화 차트 그리드 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '24px' }}>
+        {/* 시각화 차트 그리드: 모바일 뷰포트에서 카드가 100%에 맞춰지도록 minmax(min(100%, 480px), 1fr) 적용 */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '20px', width: '100%', boxSizing: 'border-box' }}>
           
-          {/* 좌측 차트: 등급 분포 막대 차트 */}
-          <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
+          {/* 좌측 차트 카드 */}
+          <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
                 {courseFilter} 성적 등급 분포
               </h2>
-              <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>* 마우스 오버 시 비율 확인</span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>* 터치 스크롤 지원</span>
             </div>
-            <div style={{ width: '100%', height: '320px' }}>
-              {gradeDistData.length === 0 ? (
-                <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                  해당 교과목 데이터가 존재하지 않습니다.
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height={320}>
-                  <BarChart data={gradeDistData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor} />
-                    <XAxis dataKey="grade" stroke={chartAxisColor} />
-                    <YAxis stroke={chartAxisColor} />
-                    <Tooltip content={<CustomBarTooltip />} cursor={{ fill: isDark ? '#334155' : '#f3f4f6' }} />
-                    <Bar dataKey="student_count" fill="var(--accent-blue)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
+
+            {/* 카드 내부 가로 스크롤 래퍼 */}
+            <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
+              <div style={{ minWidth: '460px', height: '300px' }}>
+                {gradeDistData.length === 0 ? (
+                  <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                    해당 교과목 데이터가 존재하지 않습니다.
+                  </div>
+                ) : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={gradeDistData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor} />
+                      <XAxis dataKey="grade" stroke={chartAxisColor} tick={{ fontSize: 11 }} />
+                      <YAxis stroke={chartAxisColor} tick={{ fontSize: 11 }} />
+                      <Tooltip content={<CustomBarTooltip />} cursor={{ fill: isDark ? '#334155' : '#f3f4f6' }} />
+                      <Bar dataKey="student_count" fill="var(--accent-blue)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* 우측 차트: 교양 선택 시 [학기별 교양 평점 추이] / 그 외 [상위 10개 학과 차트 (x축 시작점 2.0)] */}
-          <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          {/* 우측 차트 카드 */}
+          <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
             {courseFilter === '교양' ? (
-              /* ================= 1. 교양 과목: 학기별 교양 평점 추이 꺾은선 차트 ================= */
               <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
+                  <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
                     학기별 교양 평균 평점 및 추이
                   </h2>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>* 학기별 시계열 분석</span>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>* 터치 스크롤 지원</span>
                 </div>
-                <div style={{ width: '100%', height: '320px' }}>
-                  {generalSemesterChartData.length === 0 ? (
-                    <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                      학기별 교양 데이터가 존재하지 않습니다.
-                    </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height={320}>
-                      <LineChart 
-                        data={generalSemesterChartData} 
-                        margin={{ top: 15, right: 25, left: -10, bottom: 25 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor} />
-                        <XAxis 
-                          dataKey="semester" 
-                          stroke={chartAxisColor}
-                          interval={0}
-                          tick={{ fontSize: 11, fill: chartAxisColor }}
-                          tickLine={false}
-                          dy={8}
-                        />
-                        <YAxis 
-                          yAxisId="left" 
-                          domain={[2.5, 4.3]} 
-                          ticks={[2.5, 3.0, 3.5, 4.0, 4.3]}
-                          stroke={chartAxisColor}
-                          tick={{ fontSize: 12, fill: chartAxisColor }}
-                          tickFormatter={(v) => v.toFixed(1)}
-                          width={40}
-                        />
-                        <YAxis 
-                          yAxisId="right" 
-                          orientation="right" 
-                          domain={[0, 100]} 
-                          ticks={[0, 25, 50, 75, 100]}
-                          stroke={chartAxisColor} 
-                          unit="%" 
-                          tick={{ fontSize: 12, fill: chartAxisColor }}
-                          width={45}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: 'var(--card-bg)',
-                            borderColor: 'var(--border-color)',
-                            borderRadius: '8px',
-                            color: 'var(--text-primary)',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)'
-                          }}
-                          formatter={(value: any, name: any) => [
-                            name === 'avg_gpa' ? `${value} / 4.3` : `${value}%`,
-                            name === 'avg_gpa' ? '평균 평점' : 'A학점 비율'
-                          ]}
-                        />
-                        <Legend
-                          verticalAlign="bottom"
-                          wrapperStyle={{ paddingTop: '10px' }}
-                          formatter={(value) => (value === 'avg_gpa' ? '평균 평점' : 'A학점 비율')}
-                        />
-                        <Line 
-                          yAxisId="left" 
-                          type="monotone" 
-                          dataKey="avg_gpa" 
-                          stroke="var(--accent-blue)" 
-                          strokeWidth={3} 
-                          dot={{ r: 5, fill: 'var(--accent-blue)', strokeWidth: 2, stroke: '#ffffff' }} 
-                          activeDot={{ r: 7 }}
-                        />
-                        <Line 
-                          yAxisId="right" 
-                          type="monotone" 
-                          dataKey="a_grade_ratio" 
-                          stroke="var(--accent-green)" 
-                          strokeWidth={2} 
-                          strokeDasharray="4 4" 
-                          dot={{ r: 4, fill: 'var(--accent-green)' }} 
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  )}
+
+                {/* 카드 내부 가로 스크롤 래퍼 */}
+                <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
+                  <div style={{ minWidth: '480px', height: '300px' }}>
+                    {generalSemesterChartData.length === 0 ? (
+                      <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                        학기별 교양 데이터가 존재하지 않습니다.
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <LineChart 
+                          data={generalSemesterChartData} 
+                          margin={{ top: 15, right: 25, left: -15, bottom: 20 }}
+                        >
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor} />
+                          <XAxis 
+                            dataKey="semester" 
+                            stroke={chartAxisColor}
+                            interval={0}
+                            tick={{ fontSize: 11, fill: chartAxisColor }}
+                            tickLine={false}
+                            dy={6}
+                          />
+                          <YAxis 
+                            yAxisId="left" 
+                            domain={[2.5, 4.3]} 
+                            ticks={[2.5, 3.0, 3.5, 4.0, 4.3]}
+                            stroke={chartAxisColor}
+                            tick={{ fontSize: 11, fill: chartAxisColor }}
+                            tickFormatter={(v) => v.toFixed(1)}
+                            width={35}
+                          />
+                          <YAxis 
+                            yAxisId="right" 
+                            orientation="right" 
+                            domain={[0, 100]} 
+                            ticks={[0, 25, 50, 75, 100]}
+                            stroke={chartAxisColor} 
+                            unit="%" 
+                            tick={{ fontSize: 11, fill: chartAxisColor }}
+                            width={40}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              backgroundColor: 'var(--card-bg)',
+                              borderColor: 'var(--border-color)',
+                              borderRadius: '8px',
+                              color: 'var(--text-primary)',
+                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)'
+                            }}
+                            formatter={(value: any, name: any) => [
+                              name === 'avg_gpa' ? `${value} / 4.3` : `${value}%`,
+                              name === 'avg_gpa' ? '평균 평점' : 'A학점 비율'
+                            ]}
+                          />
+                          <Legend
+                            verticalAlign="bottom"
+                            wrapperStyle={{ paddingTop: '8px', fontSize: '12px' }}
+                            formatter={(value) => (value === 'avg_gpa' ? '평균 평점' : 'A학점 비율')}
+                          />
+                          <Line 
+                            yAxisId="left" 
+                            type="monotone" 
+                            dataKey="avg_gpa" 
+                            stroke="var(--accent-blue)" 
+                            strokeWidth={3} 
+                            dot={{ r: 4, fill: 'var(--accent-blue)', strokeWidth: 2, stroke: '#ffffff' }} 
+                            activeDot={{ r: 6 }}
+                          />
+                          <Line 
+                            yAxisId="right" 
+                            type="monotone" 
+                            dataKey="a_grade_ratio" 
+                            stroke="var(--accent-green)" 
+                            strokeWidth={2} 
+                            strokeDasharray="4 4" 
+                            dot={{ r: 3, fill: 'var(--accent-green)' }} 
+                          />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
                 </div>
               </>
             ) : (
-              /* ================= 2. 전공/전체 과목: 상위 10개 학과 가로 바 차트 (x축 시작점 2.0 적용) ================= */
               <>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-                  <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
-                    {sortBy === 'avg_gpa' ? '전공 평점 상위 학과 Top 10' : '전공 A학점 비율 상위 학과 Top 10'}
+                  <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
+                    {sortBy === 'avg_gpa' ? '전공 평점 상위 학과 Top 10' : '전공 A비율 상위 학과 Top 10'}
                   </h2>
 
-                  {/* 차트 카드 헤더 내부로 통합된 정렬 버튼 그룹 */}
                   <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--border-color)', padding: '2px', borderRadius: '6px' }}>
                     <button
                       onClick={() => setSortBy('avg_gpa')}
                       style={{
-                        padding: '4px 10px',
-                        fontSize: '12px',
+                        padding: '3px 8px',
+                        fontSize: '11px',
                         fontWeight: '600',
                         borderRadius: '4px',
                         border: 'none',
                         cursor: 'pointer',
                         backgroundColor: sortBy === 'avg_gpa' ? 'var(--card-bg)' : 'transparent',
-                        color: sortBy === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-muted)',
-                        boxShadow: sortBy === 'avg_gpa' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                        color: sortBy === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-muted)'
                       }}
                     >
                       평점순
@@ -480,15 +482,14 @@ export default function UniversityDetailPage() {
                     <button
                       onClick={() => setSortBy('a_grade_ratio')}
                       style={{
-                        padding: '4px 10px',
-                        fontSize: '12px',
+                        padding: '3px 8px',
+                        fontSize: '11px',
                         fontWeight: '600',
                         borderRadius: '4px',
                         border: 'none',
                         cursor: 'pointer',
                         backgroundColor: sortBy === 'a_grade_ratio' ? 'var(--card-bg)' : 'transparent',
-                        color: sortBy === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-muted)',
-                        boxShadow: sortBy === 'a_grade_ratio' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                        color: sortBy === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-muted)'
                       }}
                     >
                       A비율순
@@ -496,52 +497,53 @@ export default function UniversityDetailPage() {
                   </div>
                 </div>
 
-                <div style={{ width: '100%', height: '320px' }}>
-                  {topDeptsChartData.length === 0 ? (
-                    <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-                      학과 성적 데이터가 없습니다.
-                    </div>
-                  ) : (
-                    <ResponsiveContainer width="100%" height={320}>
-                      <BarChart data={topDeptsChartData} layout="vertical" margin={{ top: 10, right: 20, left: 40, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={chartGridColor} />
-                        
-                        {/* X축: 평점 정렬 시 시작점을 2.0으로 강제 설정 */}
-                        <XAxis 
-                          type="number" 
-                          domain={sortBy === 'avg_gpa' ? [2.0, 4.3] : [0, 100]} 
-                          ticks={sortBy === 'avg_gpa' ? [2.0, 2.5, 3.0, 3.5, 4.0, 4.3] : [0, 25, 50, 75, 100]}
-                          stroke={chartAxisColor} 
-                          unit={sortBy === 'avg_gpa' ? '' : '%'}
-                          tick={{ fontSize: 11, fill: chartAxisColor }}
-                        />
-                        <YAxis 
-                          type="category" 
-                          dataKey="dept_name" 
-                          stroke={chartAxisColor} 
-                          width={95} 
-                          tick={{ fontSize: 12, fill: chartAxisColor }} 
-                        />
-                        <Tooltip 
-                          formatter={(value: any) => [
-                            sortBy === 'avg_gpa' ? `${value} / 4.3` : `${value}%`, 
-                            sortBy === 'avg_gpa' ? '평균 평점' : 'A학점 비율'
-                          ]}
-                          contentStyle={{
-                            backgroundColor: 'var(--card-bg)',
-                            borderColor: 'var(--border-color)',
-                            borderRadius: '8px',
-                            color: 'var(--text-primary)'
-                          }}
-                        />
-                        <Bar 
-                          dataKey="chart_value" 
-                          fill={sortBy === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--accent-green)'} 
-                          radius={[0, 4, 4, 0]} 
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  )}
+                {/* 카드 내부 가로 스크롤 래퍼 */}
+                <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
+                  <div style={{ minWidth: '460px', height: '300px' }}>
+                    {topDeptsChartData.length === 0 ? (
+                      <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+                        학과 성적 데이터가 없습니다.
+                      </div>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={topDeptsChartData} layout="vertical" margin={{ top: 10, right: 15, left: 30, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={chartGridColor} />
+                          <XAxis 
+                            type="number" 
+                            domain={sortBy === 'avg_gpa' ? [2.0, 4.3] : [0, 100]} 
+                            ticks={sortBy === 'avg_gpa' ? [2.0, 2.5, 3.0, 3.5, 4.0, 4.3] : [0, 25, 50, 75, 100]}
+                            stroke={chartAxisColor} 
+                            unit={sortBy === 'avg_gpa' ? '' : '%'}
+                            tick={{ fontSize: 10, fill: chartAxisColor }}
+                          />
+                          <YAxis 
+                            type="category" 
+                            dataKey="dept_name" 
+                            stroke={chartAxisColor} 
+                            width={85} 
+                            tick={{ fontSize: 11, fill: chartAxisColor }} 
+                          />
+                          <Tooltip 
+                            formatter={(value: any) => [
+                              sortBy === 'avg_gpa' ? `${value} / 4.3` : `${value}%`, 
+                              sortBy === 'avg_gpa' ? '평균 평점' : 'A학점 비율'
+                            ]}
+                            contentStyle={{
+                              backgroundColor: 'var(--card-bg)',
+                              borderColor: 'var(--border-color)',
+                              borderRadius: '8px',
+                              color: 'var(--text-primary)'
+                            }}
+                          />
+                          <Bar 
+                            dataKey="chart_value" 
+                            fill={sortBy === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--accent-green)'} 
+                            radius={[0, 4, 4, 0]} 
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )}
+                  </div>
                 </div>
               </>
             )}

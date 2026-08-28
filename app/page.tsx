@@ -322,12 +322,12 @@ function LeaderboardContent() {
     whiteSpace: 'nowrap' as const
   };
 
-  // 통일된 폼 컨트롤(select, input) 기본 스타일
+  // 48px 표준 규격 폼 컨트롤 스타일
   const formControlBaseStyle = {
     boxSizing: 'border-box' as const,
-    height: '42px',
-    padding: '0 12px',
-    fontSize: '13px',
+    height: '48px',
+    padding: '0 14px',
+    fontSize: '14px',
     border: '1px solid var(--border-color)',
     borderRadius: '8px',
     backgroundColor: 'var(--card-bg)',
@@ -373,7 +373,7 @@ function LeaderboardContent() {
           .filter-group-wrapper {
             flex-direction: column !important;
             width: 100% !important;
-            gap: 8px !important;
+            gap: 10px !important;
           }
           .filter-group-wrapper select,
           .filter-group-wrapper input {
@@ -381,6 +381,7 @@ function LeaderboardContent() {
             min-width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
+            height: 48px !important;
           }
         }
       `}</style>
@@ -438,20 +439,20 @@ function LeaderboardContent() {
           </button>
         </div>
 
-        {/* 제어 패널 (통일된 규격 적용) */}
+        {/* 제어 패널 (48px 정규 규격 적용) */}
         <div className="control-panel-wrapper" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           
-          <div className="filter-group-wrapper" style={{ display: 'flex', gap: '8px', flex: 1, minWidth: '280px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="filter-group-wrapper" style={{ display: 'flex', gap: '10px', flex: 1, minWidth: '280px', flexWrap: 'wrap', alignItems: 'center' }}>
             
             {viewMode === 'univ' && (
-              <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--border-color)', padding: '3px', borderRadius: '8px', width: 'fit-content', height: '42px', boxSizing: 'border-box', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--border-color)', padding: '4px', borderRadius: '8px', width: 'fit-content', height: '48px', boxSizing: 'border-box', alignItems: 'center' }}>
                 {(['전체', '전공', '교양'] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => handleCourseFilterChange(type)}
                     style={{
-                      height: '34px',
-                      padding: '0 14px',
+                      height: '40px',
+                      padding: '0 16px',
                       fontSize: '13px',
                       fontWeight: '600',
                       borderRadius: '6px',
@@ -526,7 +527,7 @@ function LeaderboardContent() {
               style={{
                 ...formControlBaseStyle,
                 flex: 1,
-                minWidth: '160px'
+                minWidth: '180px'
               }}
             />
           </div>
@@ -537,9 +538,9 @@ function LeaderboardContent() {
               onClick={() => handleSort('avg_gpa')}
               style={{
                 flex: 1,
-                height: '40px',
+                height: '44px',
                 padding: '0 8px',
-                fontSize: '12px',
+                fontSize: '13px',
                 fontWeight: '600',
                 borderRadius: '8px',
                 border: '1px solid var(--border-color)',
@@ -554,9 +555,9 @@ function LeaderboardContent() {
               onClick={() => handleSort('a_grade_ratio')}
               style={{
                 flex: 1,
-                height: '40px',
+                height: '44px',
                 padding: '0 8px',
-                fontSize: '12px',
+                fontSize: '13px',
                 fontWeight: '600',
                 borderRadius: '8px',
                 border: '1px solid var(--border-color)',
@@ -609,7 +610,7 @@ function LeaderboardContent() {
               </div>
             ) : (
               <>
-                {/* [데스크톱 뷰] 상세 보기 열이 제거된 7열 테이블 */}
+                {/* [데스크톱 뷰] 7열 테이블 */}
                 <div className="desktop-view" style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', minWidth: '760px', tableLayout: 'fixed', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
@@ -766,7 +767,7 @@ function LeaderboardContent() {
               </div>
             ) : (
               <>
-                {/* [데스크톱 뷰] 상세 보기 열이 제거된 7열 테이블 */}
+                {/* [데스크톱 뷰] 7열 테이블 */}
                 <div className="desktop-view" style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', minWidth: '780px', tableLayout: 'fixed', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
@@ -952,8 +953,8 @@ function LeaderboardContent() {
                   gap: '6px',
                   width: '100%',
                   maxWidth: '320px',
-                  padding: '10px 20px',
-                  fontSize: '13px',
+                  padding: '12px 20px',
+                  fontSize: '14px',
                   fontWeight: '600',
                   border: '1px solid var(--border-color)',
                   borderRadius: '8px',

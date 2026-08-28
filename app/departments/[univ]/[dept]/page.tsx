@@ -51,7 +51,6 @@ const CustomBarTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-// 1. 실제 리포트 본문 컴포넌트
 function DepartmentDetailContent() {
   const params = useParams();
   const router = useRouter();
@@ -59,7 +58,6 @@ function DepartmentDetailContent() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState<boolean>(false);
 
-  // 이전 진입 출처 판별: 'univ'이면 학교 리포트에서 온 것
   const fromSource = searchParams.get('from');
 
   const rawUniv = typeof params.univ === 'string' ? params.univ : '';
@@ -98,7 +96,6 @@ function DepartmentDetailContent() {
     fetchDepartmentData();
   }, [univName, deptName]);
 
-  // KPI 지표 계산
   const totalStudents = gradeData.reduce((acc, cur) => acc + (cur.student_count || 0), 0);
   const validGrades = gradeData.filter((d) => d.grade_point !== null && d.grade_point !== undefined);
   const totalWeightedPoints = validGrades.reduce((acc, cur) => acc + (cur.grade_point! * cur.student_count), 0);
@@ -109,7 +106,6 @@ function DepartmentDetailContent() {
     .reduce((acc, cur) => acc + (cur.student_count || 0), 0);
   const aGradeRatio = totalStudents > 0 ? ((aGradeStudents / totalStudents) * 100).toFixed(1) : '0.0';
 
-  // 등급별 누적 인원 및 비율 가공
   const gradeSummaryMap: { [key: string]: number } = {};
   gradeData.forEach((row) => {
     const g = row.grade ? row.grade.trim() : '';
@@ -130,7 +126,6 @@ function DepartmentDetailContent() {
       };
     });
 
-  // 학기별 평점 추이 집계
   const semesterMap: { [key: string]: { totalPoints: number; count: number } } = {};
   validGrades.forEach((row) => {
     const sem = row.semester ? row.semester.trim() : '기타';
@@ -150,13 +145,10 @@ function DepartmentDetailContent() {
   const chartGridColor = isDark ? '#334155' : '#f3f4f6';
   const chartAxisColor = isDark ? '#94a3b8' : '#4b5563';
 
-  // 동적 뒤로가기 핸들러
   const handleGoBack = () => {
     if (fromSource === 'univ') {
-      // 대학교 리포트에서 온 경우 대학교 리포트 페이지로 이동
       router.push(`/universities/${encodeURIComponent(univName)}`);
     } else {
-      // 메인에서 왔거나 직접 진입한 경우 메인 전체 랭킹으로 이동
       router.push('/');
     }
   };
@@ -170,14 +162,33 @@ function DepartmentDetailContent() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '40px 20px', transition: 'background-color 0.2s' }}>
-      <div style={{ maxWidth: '1080px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '24px 16px', boxSizing: 'border-box', overflowX: 'hidden', transition: 'background-color 0.2s' }}>
+      <div style={{ maxWidth: '1080px', width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px', boxSizing: 'border-box' }}>
         
-        {/* 상단 네비게이션 및 테마 스위치 */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '20px' }}>
-          <div>
-            <span style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--text-muted)', marginTop: '4px' }}>{univName}</span>
-            <h1 style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '4px 0 0 0' }}>{deptName} 학점 분석 리포트</h1>
+        {/* 상단 네비게이션 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', gap: '12px' }}>
+          <div style={{ minWidth: 0 }}>
+            <button
+              onClick={handleGoBack}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                fontSize: '13px',
+                color: 'var(--accent-blue)',
+                cursor: 'pointer',
+                marginBottom: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                fontWeight: '600'
+              }}
+            >
+              {fromSource === 'univ' ? `← ${univName} 종합 리포트로 돌아가기` : '← 전체 랭킹으로 돌아가기'}
+            </button>
+            <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-muted)', marginTop: '2px' }}>{univName}</span>
+            <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '2px 0 0 0', wordBreak: 'keep-all' }}>
+              {deptName} 학점 분석 리포트
+            </h1>
           </div>
           <ThemeToggle />
         </div>
@@ -186,7 +197,7 @@ function DepartmentDetailContent() {
         {gradeData.length === 0 && (
           <div style={{ backgroundColor: isDark ? '#450a0a' : '#fef2f2', border: '1px solid #f87171', padding: '16px', borderRadius: '8px', color: isDark ? '#fca5a5' : '#991b1b' }}>
             <p style={{ fontWeight: 'bold', margin: '0 0 4px 0' }}>데이터를 조회할 수 없습니다.</p>
-            <p style={{ fontSize: '14px', margin: 0 }}>
+            <p style={{ fontSize: '13px', margin: 0 }}>
               요청 정보: 학교명 "{univName}", 학과명 "{deptName}"<br />
               {errorMsg ? `오류 메시지: ${errorMsg}` : '데이터베이스에 해당 학과명의 성적 레코드가 존재하지 않습니다.'}
             </p>
@@ -194,66 +205,77 @@ function DepartmentDetailContent() {
         )}
 
         {/* 핵심 KPI 카드 그리드 */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
-          <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 8px 0', fontWeight: '500' }}>전체 평균 평점</p>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--accent-blue)', margin: 0 }}>
-              {avgGpa} <span style={{ fontSize: '16px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '16px', width: '100%', boxSizing: 'border-box' }}>
+          <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 6px 0', fontWeight: '500' }}>전체 평균 평점</p>
+            <p style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)', margin: 0 }}>
+              {avgGpa} <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
             </p>
           </div>
-          <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 8px 0', fontWeight: '500' }}>A학점 취득 비율</p>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--accent-green)', margin: 0 }}>{aGradeRatio}%</p>
+          <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 6px 0', fontWeight: '500' }}>A학점 취득 비율</p>
+            <p style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-green)', margin: 0 }}>{aGradeRatio}%</p>
           </div>
-          <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 8px 0', fontWeight: '500' }}>누적 수강 학생 수</p>
-            <p style={{ fontSize: '32px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{totalStudents.toLocaleString()}명</p>
+          <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 6px 0', fontWeight: '500' }}>누적 수강 학생 수</p>
+            <p style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--text-primary)', margin: 0 }}>{totalStudents.toLocaleString()}명</p>
           </div>
         </div>
 
-        {/* 시각화 차트 영역 */}
+        {/* 시각화 차트 그리드 */}
         {gradeData.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '20px', width: '100%', boxSizing: 'border-box' }}>
             
-            {/* 막대 그래프 카드 */}
-            <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>등급별 성적 분포</h2>
-                <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>* 마우스 오버 시 비율 노출</span>
+            {/* 막대 차트 카드 */}
+            <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
+                <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>등급별 성적 분포</h2>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>* 터치 스크롤 지원</span>
               </div>
-              <div style={{ width: '100%', height: '300px' }}>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={barChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor} />
-                    <XAxis dataKey="grade" stroke={chartAxisColor} />
-                    <YAxis stroke={chartAxisColor} />
-                    <Tooltip content={<CustomBarTooltip />} cursor={{ fill: isDark ? '#334155' : '#f3f4f6' }} />
-                    <Bar dataKey="student_count" fill="var(--accent-blue)" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+
+              {/* 가로 스크롤 래퍼 */}
+              <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
+                <div style={{ minWidth: '460px', height: '300px' }}>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={barChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor} />
+                      <XAxis dataKey="grade" stroke={chartAxisColor} tick={{ fontSize: 11 }} />
+                      <YAxis stroke={chartAxisColor} tick={{ fontSize: 11 }} />
+                      <Tooltip content={<CustomBarTooltip />} cursor={{ fill: isDark ? '#334155' : '#f3f4f6' }} />
+                      <Bar dataKey="student_count" fill="var(--accent-blue)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
 
             {/* 선 그래프 카드 */}
-            <div style={{ backgroundColor: 'var(--card-bg)', padding: '24px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '16px' }}>학기별 평균 평점 추이</h2>
-              <div style={{ width: '100%', height: '300px' }}>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={lineChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor} />
-                    <XAxis dataKey="semester" stroke={chartAxisColor} />
-                    <YAxis domain={[0, 4.3]} stroke={chartAxisColor} />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'var(--card-bg)',
-                        borderColor: 'var(--border-color)',
-                        borderRadius: '8px',
-                        color: 'var(--text-primary)'
-                      }}
-                    />
-                    <Line type="monotone" dataKey="avg_gpa" stroke="var(--accent-green)" strokeWidth={3} dot={{ r: 5 }} />
-                  </LineChart>
-                </ResponsiveContainer>
+            <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
+                <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>학기별 평균 평점 추이</h2>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>* 터치 스크롤 지원</span>
+              </div>
+
+              {/* 가로 스크롤 래퍼 */}
+              <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
+                <div style={{ minWidth: '460px', height: '300px' }}>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={lineChartData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor} />
+                      <XAxis dataKey="semester" stroke={chartAxisColor} tick={{ fontSize: 11 }} />
+                      <YAxis domain={[0, 4.3]} stroke={chartAxisColor} tick={{ fontSize: 11 }} />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'var(--card-bg)',
+                          borderColor: 'var(--border-color)',
+                          borderRadius: '8px',
+                          color: 'var(--text-primary)'
+                        }}
+                      />
+                      <Line type="monotone" dataKey="avg_gpa" stroke="var(--accent-green)" strokeWidth={3} dot={{ r: 4 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
             </div>
 
@@ -265,7 +287,6 @@ function DepartmentDetailContent() {
   );
 }
 
-// 2. Next.js useSearchParams Suspense 경계 래퍼
 export default function DepartmentDetailPage() {
   return (
     <Suspense fallback={
