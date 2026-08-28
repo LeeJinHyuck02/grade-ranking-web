@@ -332,11 +332,7 @@ function LeaderboardContent() {
         .mobile-view {
           display: none;
         }
-        .mobile-sort-container {
-          display: none;
-        }
 
-        /* 40px 컴팩트 정규화 폼 컨트롤 */
         .unified-form-control {
           display: block !important;
           box-sizing: border-box !important;
@@ -360,7 +356,6 @@ function LeaderboardContent() {
           box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2) !important;
         }
 
-        /* 36px 슬림 세그먼트 토글 컨테이너 */
         .unified-toggle-container {
           display: flex !important;
           align-items: center !important;
@@ -374,18 +369,20 @@ function LeaderboardContent() {
           gap: 3px !important;
         }
 
-        @media (min-width: 769px) {
-          .unified-toggle-container {
-            width: fit-content !important;
-            min-width: 230px !important;
-          }
-          .unified-input-wrapper {
-            flex: 1 !important;
-            min-width: 200px !important;
-          }
-          .unified-select-wrapper {
-            width: 160px !important;
-          }
+        .unified-toggle-btn {
+          flex: 1 !important;
+          height: 32px !important;
+          padding: 0 10px !important;
+          font-size: 13px !important;
+          border-radius: 6px !important;
+          border: none !important;
+          cursor: pointer !important;
+          transition: all 0.15s ease !important;
+          white-space: nowrap !important;
+          text-align: center !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
 
         @media (max-width: 768px) {
@@ -398,44 +395,29 @@ function LeaderboardContent() {
             gap: 10px;
             padding: 10px;
           }
-          .mobile-sort-container {
-            display: flex !important;
-            gap: 6px;
-            width: 100%;
-            margin-top: 2px;
+          .unified-form-control {
+            font-size: 16px !important;
           }
-          .control-panel-wrapper {
-            flex-direction: column !important;
-            align-items: stretch !important;
+          .dept-filters-grid {
+            gap: 6px !important;
           }
-          .filter-group-wrapper {
-            flex-direction: column !important;
-            width: 100% !important;
-            gap: 8px !important;
-          }
-          .unified-toggle-container {
-            width: 100% !important;
-          }
-          .unified-toggle-btn {
-            flex: 1 !important;
-          }
-          .unified-input-wrapper,
-          .unified-select-wrapper {
-            width: 100% !important;
+          .dept-filters-grid select {
+            font-size: 13px !important;
+            padding: 0 6px !important;
           }
         }
       `}</style>
 
       <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         
-        {/* 상단 헤더 */}
+        {/* 상단 헤더 (수정 완료) */}
         <header style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 4px 0' }}>
-              전국 대학 학점 분석 및 랭킹 리더보드
+              대학 학점 리더보드
             </h1>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-              대학알리미 공시 데이터를 기반으로 산출된 성적 통계 순위입니다.
+              대학알리미 공시 데이터 기반
             </p>
           </div>
           <ThemeToggle />
@@ -489,141 +471,152 @@ function LeaderboardContent() {
           </button>
         </div>
 
-        {/* 제어 패널 */}
-        <div className="control-panel-wrapper" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+        {/* 제어 패널: 필터 & 토글 상단 배치 + 검색창 최하단 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           
-          <div className="filter-group-wrapper" style={{ display: 'flex', gap: '8px', flex: 1, minWidth: '280px', flexWrap: 'wrap', alignItems: 'center' }}>
-            
-            {viewMode === 'univ' && (
-              <div className="unified-toggle-container">
+          {viewMode === 'univ' ? (
+            /* 학교별 랭킹: 과목 토글 + 정렬 토글 가로 배치 */
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+              
+              {/* 과목 구분 토글 */}
+              <div className="unified-toggle-container" style={{ flex: 1, minWidth: '220px' }}>
                 {(['전체', '전공', '교양'] as const).map((type) => (
                   <button
                     key={type}
                     className="unified-toggle-btn"
                     onClick={() => handleCourseFilterChange(type)}
                     style={{
-                      height: '32px',
-                      padding: '0 12px',
-                      fontSize: '13px',
                       fontWeight: courseFilter === type ? '700' : '500',
-                      borderRadius: '6px',
-                      border: 'none',
-                      cursor: 'pointer',
                       backgroundColor: courseFilter === type ? 'var(--card-bg)' : 'transparent',
                       color: courseFilter === type ? 'var(--accent-blue)' : 'var(--text-muted)',
-                      boxShadow: courseFilter === type ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
-                      transition: 'all 0.15s ease',
-                      whiteSpace: 'nowrap'
+                      boxShadow: courseFilter === type ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
                     }}
                   >
                     {type === '전체' ? '전체 교과' : `${type}만`}
                   </button>
                 ))}
               </div>
-            )}
 
-            {viewMode === 'dept' && (
-              <>
-                <div className="unified-select-wrapper">
-                  <select
-                    className="unified-form-control"
-                    value={selectedUniv}
-                    onChange={(e) => handleUnivChange(e.target.value)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <option value="ALL">전체 대학교</option>
-                    {universityList.map((univ) => (
-                      <option key={univ} value={univ}>{univ}</option>
-                    ))}
-                  </select>
-                </div>
+              {/* 정렬 방식 토글 */}
+              <div className="unified-toggle-container" style={{ flex: 1, minWidth: '220px' }}>
+                <button
+                  className="unified-toggle-btn"
+                  onClick={() => handleSort('avg_gpa')}
+                  style={{
+                    fontWeight: sortField === 'avg_gpa' ? '700' : '500',
+                    backgroundColor: sortField === 'avg_gpa' ? 'var(--card-bg)' : 'transparent',
+                    color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-muted)',
+                    boxShadow: sortField === 'avg_gpa' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                >
+                  평균 평점 {renderSortIndicator('avg_gpa')}
+                </button>
+                <button
+                  className="unified-toggle-btn"
+                  onClick={() => handleSort('a_grade_ratio')}
+                  style={{
+                    fontWeight: sortField === 'a_grade_ratio' ? '700' : '500',
+                    backgroundColor: sortField === 'a_grade_ratio' ? 'var(--card-bg)' : 'transparent',
+                    color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-muted)',
+                    boxShadow: sortField === 'a_grade_ratio' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                >
+                  A학점 비율 {renderSortIndicator('a_grade_ratio')}
+                </button>
+              </div>
 
-                <div className="unified-select-wrapper">
-                  <select
-                    className="unified-form-control"
-                    value={selectedCollege}
-                    onChange={(e) => handleCollegeChange(e.target.value)}
-                    disabled={collegeList.length === 0}
-                    style={{
-                      cursor: collegeList.length === 0 ? 'not-allowed' : 'pointer',
-                      opacity: collegeList.length === 0 ? 0.6 : 1
-                    }}
-                  >
-                    <option value="ALL">{collegeList.length === 0 ? '단과대학 없음' : '전체 단과대학'}</option>
-                    {collegeList.map((col) => (
-                      <option key={col} value={col}>{col}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="unified-select-wrapper">
-                  <select
-                    className="unified-form-control"
-                    value={minStudents}
-                    onChange={(e) => handleMinStudentsChange(Number(e.target.value))}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <option value={0}>수강 인원 전체</option>
-                    <option value={30}>30명 이상</option>
-                    <option value={50}>50명 이상</option>
-                    <option value={100}>100명 이상</option>
-                    <option value={200}>200명 이상</option>
-                    <option value={500}>500명 이상</option>
-                  </select>
-                </div>
-              </>
-            )}
-
-            <div className="unified-input-wrapper">
-              <input
-                type="text"
-                className="unified-form-control"
-                placeholder={viewMode === 'univ' ? '학교명 검색' : '학과명 또는 키워드 검색'}
-                value={searchTerm}
-                onChange={(e) => handleSearchChange(e.target.value)}
-              />
             </div>
+          ) : (
+            /* 학과별 랭킹: 대학교/단과대/인원수 가로 3분할 그리드 + 정렬 토글 */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              
+              {/* 대학교 / 단과대학 / 인원 수 가로 3분할 나열 */}
+              <div className="dept-filters-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', width: '100%' }}>
+                <select
+                  className="unified-form-control"
+                  value={selectedUniv}
+                  onChange={(e) => handleUnivChange(e.target.value)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <option value="ALL">전체 대학교</option>
+                  {universityList.map((univ) => (
+                    <option key={univ} value={univ}>{univ}</option>
+                  ))}
+                </select>
+
+                <select
+                  className="unified-form-control"
+                  value={selectedCollege}
+                  onChange={(e) => handleCollegeChange(e.target.value)}
+                  disabled={collegeList.length === 0}
+                  style={{
+                    cursor: collegeList.length === 0 ? 'not-allowed' : 'pointer',
+                    opacity: collegeList.length === 0 ? 0.6 : 1
+                  }}
+                >
+                  <option value="ALL">{collegeList.length === 0 ? '단과대 없음' : '전체 단과대'}</option>
+                  {collegeList.map((col) => (
+                    <option key={col} value={col}>{col}</option>
+                  ))}
+                </select>
+
+                <select
+                  className="unified-form-control"
+                  value={minStudents}
+                  onChange={(e) => handleMinStudentsChange(Number(e.target.value))}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <option value={0}>인원 전체</option>
+                  <option value={30}>30명 이상</option>
+                  <option value={50}>50명 이상</option>
+                  <option value={100}>100명 이상</option>
+                  <option value={200}>200명 이상</option>
+                  <option value={500}>500명 이상</option>
+                </select>
+              </div>
+
+              {/* 정렬 방식 토글 */}
+              <div className="unified-toggle-container" style={{ width: '100%' }}>
+                <button
+                  className="unified-toggle-btn"
+                  onClick={() => handleSort('avg_gpa')}
+                  style={{
+                    fontWeight: sortField === 'avg_gpa' ? '700' : '500',
+                    backgroundColor: sortField === 'avg_gpa' ? 'var(--card-bg)' : 'transparent',
+                    color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-muted)',
+                    boxShadow: sortField === 'avg_gpa' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                >
+                  평균 평점 {renderSortIndicator('avg_gpa')}
+                </button>
+                <button
+                  className="unified-toggle-btn"
+                  onClick={() => handleSort('a_grade_ratio')}
+                  style={{
+                    fontWeight: sortField === 'a_grade_ratio' ? '700' : '500',
+                    backgroundColor: sortField === 'a_grade_ratio' ? 'var(--card-bg)' : 'transparent',
+                    color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-muted)',
+                    boxShadow: sortField === 'a_grade_ratio' ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                  }}
+                >
+                  A학점 비율 {renderSortIndicator('a_grade_ratio')}
+                </button>
+              </div>
+
+            </div>
+          )}
+
+          {/* 최하단 검색창 */}
+          <div style={{ width: '100%' }}>
+            <input
+              type="text"
+              className="unified-form-control"
+              placeholder={viewMode === 'univ' ? '학교명 검색' : '학과명 또는 키워드 검색'}
+              value={searchTerm}
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
           </div>
 
-          {/* 모바일 전용 슬림 정렬 토글 바 */}
-          <div className="mobile-sort-container">
-            <button
-              onClick={() => handleSort('avg_gpa')}
-              style={{
-                flex: 1,
-                height: '36px',
-                padding: '0 8px',
-                fontSize: '12px',
-                fontWeight: sortField === 'avg_gpa' ? '700' : '500',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                backgroundColor: sortField === 'avg_gpa' ? 'var(--card-hover)' : 'var(--card-bg)',
-                color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-secondary)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              평균 평점 {renderSortIndicator('avg_gpa')}
-            </button>
-            <button
-              onClick={() => handleSort('a_grade_ratio')}
-              style={{
-                flex: 1,
-                height: '36px',
-                padding: '0 8px',
-                fontSize: '12px',
-                fontWeight: sortField === 'a_grade_ratio' ? '700' : '500',
-                borderRadius: '6px',
-                border: '1px solid var(--border-color)',
-                backgroundColor: sortField === 'a_grade_ratio' ? 'var(--card-hover)' : 'var(--card-bg)',
-                color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-secondary)',
-                cursor: 'pointer',
-                transition: 'all 0.15s ease'
-              }}
-            >
-              A학점 비율 {renderSortIndicator('a_grade_ratio')}
-            </button>
-          </div>
         </div>
 
         {/* 상태 요약 바 */}
