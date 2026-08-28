@@ -17,22 +17,33 @@
   --chart-axis: #6b7280;
 }
 
+/* Dark Mode (깔끔한 무채색 뉴트럴 그레이 팔레트) */
 [data-theme='dark'],
 .dark {
-  --bg-primary: #0f172a;
-  --card-bg: #1e293b;
-  --card-hover: #334155;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #94a3b8;
-  --border-color: #334155;
-  --table-header-bg: #0f172a;
+  /* 전체 기본 배경: 깊은 차콜 블랙 */
+  --bg-primary: #121212;
+
+  /* 카드 및 테이블 배경: 매트한 다크 그레이 */
+  --card-bg: #1e1e1e;
+
+  /* 인터랙션 호버 상태 */
+  --card-hover: #2a2a2e;
+
+  /* 테이블 헤더 및 컨트롤 배경: 배경과 카드 사이 중간 톤 */
+  --table-header-bg: #18181b;
+
+  /* 테두리 및 분할선: 튀지 않는 정갈한 경계선 */
+  --border-color: #2e2e32;
+
+  /* 텍스트 색상 계층 */
+  --text-primary: #f4f4f5;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+
+  /* 악센트 색상: 무채색 배경에서 최적의 명도 대비를 가지는 톤 */
   --accent-blue: #3b82f6;
   --accent-green: #10b981;
-  --chart-grid: #334155;
-  --chart-axis: #94a3b8;
 }
-
 html, body {
   background-color: var(--bg-primary) !important;
   color: var(--text-primary) !important;
