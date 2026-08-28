@@ -17,32 +17,32 @@
   --chart-axis: #6b7280;
 }
 
-/* Dark Mode (깔끔한 무채색 뉴트럴 그레이 팔레트) */
+/* Dark Mode (답답함이 해소된 소프트 차콜 그레이 팔레트) */
 [data-theme='dark'],
 .dark {
-  /* 전체 기본 배경: 깊은 차콜 블랙 */
-  --bg-primary: #121212;
+  /* 전체 기본 배경: 편안한 미드 다크 톤 */
+  --bg-primary: #1c1d21;
 
-  /* 카드 및 테이블 배경: 매트한 다크 그레이 */
-  --card-bg: #1e1e1e;
+  /* 카드 및 입력창 표면: 배경과 뚜렷하게 분리되는 차콜 그레이 */
+  --card-bg: #26282e;
 
   /* 인터랙션 호버 상태 */
-  --card-hover: #2a2a2e;
+  --card-hover: #2f323a;
 
-  /* 테이블 헤더 및 컨트롤 배경: 배경과 카드 사이 중간 톤 */
-  --table-header-bg: #18181b;
+  /* 카드 내부 지표 칩 및 테이블 헤더 */
+  --table-header-bg: #202227;
 
-  /* 테두리 및 분할선: 튀지 않는 정갈한 경계선 */
-  --border-color: #2e2e32;
+  /* 테두리선: 외곽선을 깔끔하게 잡아주는 그레이 */
+  --border-color: #383c44;
 
-  /* 텍스트 색상 계층 */
-  --text-primary: #f4f4f5;
-  --text-secondary: #a1a1aa;
-  --text-muted: #71717a;
+  /* 텍스트 색상 계층 (시인성 극대화) */
+  --text-primary: #ffffff;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
 
-  /* 악센트 색상: 무채색 배경에서 최적의 명도 대비를 가지는 톤 */
-  --accent-blue: #3b82f6;
-  --accent-green: #10b981;
+  /* 악센트 색상: 차콜 배경에서 가장 선명한 채도 */
+  --accent-blue: #60a5fa;
+  --accent-green: #34d399;
 }
 html, body {
   background-color: var(--bg-primary) !important;
