@@ -61,7 +61,7 @@ function LeaderboardContent() {
   const [univRankings, setUnivRankings] = useState<UnivRankingData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  // URL 갱신 함수 (스크롤 리셋 방지)
+  // URL 쿼리 스트링 동기화
   const syncParamsToUrl = useCallback((updates: Record<string, string | number>) => {
     const params = new URLSearchParams(searchParams.toString());
 
@@ -87,7 +87,6 @@ function LeaderboardContent() {
     router.replace(newUrl, { scroll: false });
   }, [pathname, router, searchParams]);
 
-  // 데이터 로드
   useEffect(() => {
     async function fetchAllRankings() {
       setLoading(true);
@@ -103,14 +102,12 @@ function LeaderboardContent() {
     fetchAllRankings();
   }, []);
 
-  // 데이터 로딩 완료 후 저장된 스크롤 위치 복원
+  // 데이터 로드 완료 후 스크롤 복원
   useEffect(() => {
     if (!loading && typeof window !== 'undefined') {
       const savedScrollPosition = sessionStorage.getItem(SCROLL_STORAGE_KEY);
       if (savedScrollPosition !== null) {
         const targetY = parseInt(savedScrollPosition, 10);
-        
-        // 렌더링 트리 완성 시점에 맞추어 스크롤 이동
         requestAnimationFrame(() => {
           window.scrollTo({
             top: targetY,
@@ -269,7 +266,6 @@ function LeaderboardContent() {
     syncParamsToUrl({ count: nextCount });
   };
 
-  // 상세 페이지 이동 시 현재 스크롤 좌표 저장
   const saveCurrentScrollPosition = () => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem(SCROLL_STORAGE_KEY, window.scrollY.toString());
@@ -330,27 +326,73 @@ function LeaderboardContent() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '40px 20px', transition: 'background-color 0.2s' }}>
-      <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '24px 12px', transition: 'background-color 0.2s' }}>
+      
+      {/* 반응형 미디어 쿼리 주입 */}
+      <style>{`
+        .desktop-view {
+          display: block;
+        }
+        .mobile-view {
+          display: none;
+        }
+        .mobile-sort-container {
+          display: none;
+        }
+
+        @media (max-width: 768px) {
+          .desktop-view {
+            display: none !important;
+          }
+          .mobile-view {
+            display: flex !important;
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px;
+          }
+          .mobile-sort-container {
+            display: flex !important;
+            gap: 8px;
+            width: 100%;
+            margin-top: 4px;
+          }
+          .control-panel-wrapper {
+            flex-direction: column !important;
+            align-items: stretch !important;
+          }
+          .filter-group-wrapper {
+            flex-direction: column !important;
+            width: 100% !important;
+          }
+          .filter-group-wrapper select,
+          .filter-group-wrapper input {
+            width: 100% !important;
+          }
+        }
+      `}</style>
+
+      <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         
-        <header style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        {/* 상단 헤더 */}
+        <header style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 style={{ fontSize: '26px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 8px 0' }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 6px 0' }}>
               전국 대학 학점 분석 및 랭킹 리더보드
             </h1>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: 0 }}>
-              대학알리미 공시 데이터를 기반으로 산출된 교양 및 전공 과목별 학점 통계 순위입니다.
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
+              대학알리미 공시 데이터를 기반으로 산출된 성적 통계 순위입니다.
             </p>
           </div>
           <ThemeToggle />
         </header>
 
+        {/* 1차 탭: 리더보드 뷰 모드 전환 */}
         <div style={{ display: 'flex', borderBottom: '2px solid var(--border-color)', gap: '8px' }}>
           <button
             onClick={() => handleViewModeChange('univ')}
             style={{
-              padding: '12px 24px',
-              fontSize: '15px',
+              padding: '10px 18px',
+              fontSize: '14px',
               fontWeight: 'bold',
               border: 'none',
               cursor: 'pointer',
@@ -366,8 +408,8 @@ function LeaderboardContent() {
           <button
             onClick={() => handleViewModeChange('dept')}
             style={{
-              padding: '12px 24px',
-              fontSize: '15px',
+              padding: '10px 18px',
+              fontSize: '14px',
               fontWeight: 'bold',
               border: 'none',
               cursor: 'pointer',
@@ -382,18 +424,20 @@ function LeaderboardContent() {
           </button>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', gap: '10px', flex: 1, minWidth: '320px', flexWrap: 'wrap', alignItems: 'center' }}>
+        {/* 제어 패널 */}
+        <div className="control-panel-wrapper" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          
+          <div className="filter-group-wrapper" style={{ display: 'flex', gap: '8px', flex: 1, minWidth: '280px', flexWrap: 'wrap', alignItems: 'center' }}>
             
             {viewMode === 'univ' && (
-              <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--border-color)', padding: '3px', borderRadius: '8px' }}>
+              <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--border-color)', padding: '3px', borderRadius: '8px', width: 'fit-content' }}>
                 {(['전체', '전공', '교양'] as const).map((type) => (
                   <button
                     key={type}
                     onClick={() => handleCourseFilterChange(type)}
                     style={{
                       padding: '6px 12px',
-                      fontSize: '13px',
+                      fontSize: '12px',
                       fontWeight: '600',
                       borderRadius: '6px',
                       border: 'none',
@@ -467,7 +511,7 @@ function LeaderboardContent() {
                     cursor: 'pointer'
                   }}
                 >
-                  <option value={0}>인원수 전체</option>
+                  <option value={0}>수강 인원 전체</option>
                   <option value={30}>30명 이상</option>
                   <option value={50}>50명 이상</option>
                   <option value={100}>100명 이상</option>
@@ -484,7 +528,7 @@ function LeaderboardContent() {
               onChange={(e) => handleSearchChange(e.target.value)}
               style={{
                 flex: 1,
-                minWidth: '160px',
+                minWidth: '140px',
                 padding: '8px 12px',
                 fontSize: '13px',
                 border: '1px solid var(--border-color)',
@@ -496,274 +540,425 @@ function LeaderboardContent() {
             />
           </div>
 
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-            평균 평점 또는 A학점 비율을 클릭하면 높은 순/낮은 순으로 정렬됩니다.
+          {/* 모바일 전용 정렬 선택 바 */}
+          <div className="mobile-sort-container">
+            <button
+              onClick={() => handleSort('avg_gpa')}
+              style={{
+                flex: 1,
+                padding: '8px',
+                fontSize: '12px',
+                fontWeight: '600',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: sortField === 'avg_gpa' ? 'var(--border-color)' : 'var(--card-bg)',
+                color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-secondary)',
+                cursor: 'pointer'
+              }}
+            >
+              평균 평점 {renderSortIndicator('avg_gpa')}
+            </button>
+            <button
+              onClick={() => handleSort('a_grade_ratio')}
+              style={{
+                flex: 1,
+                padding: '8px',
+                fontSize: '12px',
+                fontWeight: '600',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                backgroundColor: sortField === 'a_grade_ratio' ? 'var(--border-color)' : 'var(--card-bg)',
+                color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-secondary)',
+                cursor: 'pointer'
+              }}
+            >
+              A학점 비율 {renderSortIndicator('a_grade_ratio')}
+            </button>
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px', color: 'var(--text-muted)' }}>
+        {/* 상태 요약 바 */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px', color: 'var(--text-muted)' }}>
           <div>
             {viewMode === 'univ' ? (
-              <>기준: <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{courseFilter === '전체' ? '전체(전공+교양)' : `${courseFilter} 과목 성적`}</span></>
+              <>기준: <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>{courseFilter === '전체' ? '전체(전공+교양)' : `${courseFilter} 과목`}</span></>
             ) : (
               <>
-                기준: <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>학과별 전공 과목 성적</span>
+                기준: <span style={{ fontWeight: 'bold', color: 'var(--text-primary)' }}>전공 과목</span>
                 {minStudents > 0 && (
-                  <span style={{ marginLeft: '8px', color: 'var(--accent-blue)', fontWeight: '600' }}>
-                    ({minStudents}명 이상 수강)
+                  <span style={{ marginLeft: '4px', color: 'var(--accent-blue)', fontWeight: '600' }}>
+                    ({minStudents}명 이상)
                   </span>
                 )}
               </>
             )}
           </div>
           <div>
-            표시 중: <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold' }}>
+            표시: <span style={{ color: 'var(--accent-blue)', fontWeight: 'bold' }}>
               {Math.min(visibleCount, activeDataLength)}
             </span> / {activeDataLength}개
           </div>
         </div>
 
+        {/* 리더보드 컨테이너 카드 */}
         <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+          
           {loading ? (
-            <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '15px' }}>
+            <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
               데이터를 불러오는 중입니다...
             </div>
           ) : viewMode === 'univ' ? (
+            
+            /* ================= 1. 대학교 리더보드 ================= */
             visibleUnivRankings.length === 0 ? (
-              <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '15px' }}>
+              <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
                 해당 조건의 대학교 데이터가 없습니다.
               </div>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', tableLayout: 'fixed', textAlign: 'left', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-color)', backgroundColor: 'var(--table-header-bg)', fontSize: '14px' }}>
-                      <th style={getStaticHeaderStyle('60px', 'center')}>순위</th>
-                      <th style={getStaticHeaderStyle('22%', 'left')}>학교명</th>
-                      <th style={getStaticHeaderStyle('80px', 'center')}>구분</th>
-                      <th style={getStaticHeaderStyle('12%', 'right')}>개설 학과 수</th>
-                      <th onClick={() => handleSort('avg_gpa')} style={getSortableHeaderStyle('avg_gpa', '15%')}>
-                        평균 평점 {renderSortIndicator('avg_gpa')}
-                      </th>
-                      <th onClick={() => handleSort('a_grade_ratio')} style={getSortableHeaderStyle('a_grade_ratio', '13%')}>
-                        A학점 비율 {renderSortIndicator('a_grade_ratio')}
-                      </th>
-                      <th style={getStaticHeaderStyle('14%', 'right')}>수강 학생 수</th>
-                      <th style={getStaticHeaderStyle('110px', 'center')}>상세 보기</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visibleUnivRankings.map((row, index) => {
-                      const isTopThree = index < 3;
-                      const cleanUniv = (row.univ_name || '').trim();
-                      return (
-                        <tr
-                          key={`${cleanUniv}-${row.course_type}`}
-                          onClick={() => handleNavigateToUniv(cleanUniv)}
-                          style={{
-                            borderBottom: '1px solid var(--border-color)',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            backgroundColor: 'var(--card-bg)',
-                            transition: 'background-color 0.15s ease'
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-hover)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-bg)')}
-                        >
-                          <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 'bold' }}>
+              <>
+                {/* [데스크톱 뷰] 8열 테이블 */}
+                <div className="desktop-view" style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', minWidth: '800px', tableLayout: 'fixed', textAlign: 'left', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--border-color)', backgroundColor: 'var(--table-header-bg)', fontSize: '14px' }}>
+                        <th style={getStaticHeaderStyle('60px', 'center')}>순위</th>
+                        <th style={getStaticHeaderStyle('22%', 'left')}>학교명</th>
+                        <th style={getStaticHeaderStyle('80px', 'center')}>구분</th>
+                        <th style={getStaticHeaderStyle('12%', 'right')}>개설 학과 수</th>
+                        <th onClick={() => handleSort('avg_gpa')} style={getSortableHeaderStyle('avg_gpa', '15%')}>
+                          평균 평점 {renderSortIndicator('avg_gpa')}
+                        </th>
+                        <th onClick={() => handleSort('a_grade_ratio')} style={getSortableHeaderStyle('a_grade_ratio', '13%')}>
+                          A학점 비율 {renderSortIndicator('a_grade_ratio')}
+                        </th>
+                        <th style={getStaticHeaderStyle('14%', 'right')}>수강 학생 수</th>
+                        <th style={getStaticHeaderStyle('110px', 'center')}>상세 보기</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleUnivRankings.map((row, index) => {
+                        const isTopThree = index < 3;
+                        const cleanUniv = (row.univ_name || '').trim();
+                        return (
+                          <tr
+                            key={`${cleanUniv}-${row.course_type}`}
+                            onClick={() => handleNavigateToUniv(cleanUniv)}
+                            style={{
+                              borderBottom: '1px solid var(--border-color)',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                              backgroundColor: 'var(--card-bg)',
+                              transition: 'background-color 0.15s ease'
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-hover)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-bg)')}
+                          >
+                            <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 'bold' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                width: '26px',
+                                height: '26px',
+                                lineHeight: '26px',
+                                borderRadius: '50%',
+                                backgroundColor: isTopThree ? 'var(--border-color)' : 'transparent',
+                                color: isTopThree ? 'var(--accent-blue)' : 'var(--text-muted)',
+                                fontSize: '13px'
+                              }}>
+                                {index + 1}
+                              </span>
+                            </td>
+                            <td title={cleanUniv} style={{ ...ellipsisCellStyle, padding: '14px 12px', fontWeight: '600', color: 'var(--text-primary)', fontSize: '15px' }}>
+                              {cleanUniv}
+                            </td>
+                            <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                              <span style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '4px', backgroundColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
+                                {row.course_type}
+                              </span>
+                            </td>
+                            <td style={{ padding: '14px 12px', textAlign: 'right', color: 'var(--text-secondary)' }}>
+                              {row.course_type === '교양' ? '-' : `${row.total_depts}개`}
+                            </td>
+                            <td style={{ padding: '14px 12px', textAlign: 'right', fontWeight: sortField === 'avg_gpa' ? 'bold' : 'normal', color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)' }}>
+                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
+                            </td>
+                            <td style={{ padding: '14px 12px', textAlign: 'right', fontWeight: sortField === 'a_grade_ratio' ? 'bold' : 'normal', color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)' }}>
+                              {row.a_grade_ratio !== null ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
+                            </td>
+                            <td style={{ padding: '14px 12px', textAlign: 'right', color: 'var(--text-secondary)' }}>
+                              {(row.total_students || 0).toLocaleString()}명
+                            </td>
+                            <td style={{ padding: '14px 12px', textAlign: 'center' }}>
+                              <span style={{ fontSize: '12px', color: 'var(--accent-blue)', fontWeight: '600', padding: '4px 8px', borderRadius: '4px', backgroundColor: 'var(--border-color)' }}>
+                                리포트 →
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* [모바일 뷰] 카드형 리스트 */}
+                <div className="mobile-view">
+                  {visibleUnivRankings.map((row, index) => {
+                    const isTopThree = index < 3;
+                    const cleanUniv = (row.univ_name || '').trim();
+                    return (
+                      <div
+                        key={`m-${cleanUniv}-${row.course_type}`}
+                        onClick={() => handleNavigateToUniv(cleanUniv)}
+                        style={{
+                          backgroundColor: 'var(--card-bg)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          padding: '14px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{
                               display: 'inline-block',
-                              width: '26px',
-                              height: '26px',
-                              lineHeight: '26px',
+                              width: '24px',
+                              height: '24px',
+                              lineHeight: '24px',
+                              textAlign: 'center',
                               borderRadius: '50%',
                               backgroundColor: isTopThree ? 'var(--border-color)' : 'transparent',
                               color: isTopThree ? 'var(--accent-blue)' : 'var(--text-muted)',
-                              fontSize: '13px'
+                              fontSize: '12px',
+                              fontWeight: 'bold'
                             }}>
                               {index + 1}
                             </span>
-                          </td>
-                          <td title={cleanUniv} style={{ ...ellipsisCellStyle, padding: '14px 12px', fontWeight: '600', color: 'var(--text-primary)', fontSize: '15px' }}>
-                            {cleanUniv}
-                          </td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                            <span style={{
-                              fontSize: '12px',
-                              padding: '2px 8px',
-                              borderRadius: '4px',
-                              backgroundColor: 'var(--border-color)',
-                              color: 'var(--text-secondary)'
-                            }}>
-                              {row.course_type}
+                            <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                              {cleanUniv}
                             </span>
-                          </td>
-                          <td style={{ padding: '14px 12px', textAlign: 'right', color: 'var(--text-secondary)' }}>
-                            {row.course_type === '교양' ? '-' : `${row.total_depts}개`}
-                          </td>
-                          <td style={{
-                            padding: '14px 12px',
-                            textAlign: 'right',
-                            fontWeight: sortField === 'avg_gpa' ? 'bold' : 'normal',
-                            color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)'
-                          }}>
-                            {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
-                          </td>
-                          <td style={{
-                            padding: '14px 12px',
-                            textAlign: 'right',
-                            fontWeight: sortField === 'a_grade_ratio' ? 'bold' : 'normal',
-                            color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)'
-                          }}>
-                            {row.a_grade_ratio !== null ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
-                          </td>
-                          <td style={{
-                            padding: '14px 12px',
-                            textAlign: 'right',
-                            color: 'var(--text-secondary)'
-                          }}>
-                            {(row.total_students || 0).toLocaleString()}명
-                          </td>
-                          <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                            <span style={{
-                              fontSize: '12px',
-                              color: 'var(--accent-blue)',
-                              fontWeight: '600',
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              backgroundColor: 'var(--border-color)'
-                            }}>
-                              학교 리포트 →
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                          </div>
+                          <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
+                            {row.course_type}
+                          </span>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', backgroundColor: 'var(--table-header-bg)', padding: '10px', borderRadius: '6px' }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>평균 평점</div>
+                            <div style={{ fontSize: '13px', fontWeight: 'bold', color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)' }}>
+                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'center', borderLeft: '1px solid var(--border-color)', borderRight: '1px solid var(--border-color)' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>A학점 비율</div>
+                            <div style={{ fontSize: '13px', fontWeight: 'bold', color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)' }}>
+                              {row.a_grade_ratio !== null ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>수강 학생</div>
+                            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                              {(row.total_students || 0).toLocaleString()}명
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )
           ) : (
+            
+            /* ================= 2. 학과별 리더보드 ================= */
             visibleDeptRankings.length === 0 ? (
-              <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '15px' }}>
+              <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
                 선택한 조건과 일치하는 학과 데이터가 없습니다.
               </div>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', tableLayout: 'fixed', textAlign: 'left', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '2px solid var(--border-color)', backgroundColor: 'var(--table-header-bg)', fontSize: '14px' }}>
-                      <th style={getStaticHeaderStyle('55px', 'center')}>순위</th>
-                      <th style={getStaticHeaderStyle('15%', 'left')}>학교명</th>
-                      <th style={getStaticHeaderStyle('16%', 'left')}>단과대학</th>
-                      <th style={getStaticHeaderStyle('20%', 'left')}>학과명</th>
-                      <th onClick={() => handleSort('avg_gpa')} style={getSortableHeaderStyle('avg_gpa', '14%')}>
-                        통합 평균 평점 {renderSortIndicator('avg_gpa')}
-                      </th>
-                      <th onClick={() => handleSort('a_grade_ratio')} style={getSortableHeaderStyle('a_grade_ratio', '11%')}>
-                        A학점 비율 {renderSortIndicator('a_grade_ratio')}
-                      </th>
-                      <th style={getStaticHeaderStyle('11%', 'right')}>총 수강 인원</th>
-                      <th style={getStaticHeaderStyle('100px', 'center')}>상세 보기</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visibleDeptRankings.map((row, index) => {
-                      const isTopThree = index < 3;
-                      const cleanUniv = (row.univ_name || '').trim();
-                      const cleanCollege = (row.college_name || '').trim() || '-';
-                      const cleanDept = (row.dept_name || '').trim();
+              <>
+                {/* [데스크톱 뷰] 8열 테이블 */}
+                <div className="desktop-view" style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', minWidth: '850px', tableLayout: 'fixed', textAlign: 'left', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid var(--border-color)', backgroundColor: 'var(--table-header-bg)', fontSize: '14px' }}>
+                        <th style={getStaticHeaderStyle('55px', 'center')}>순위</th>
+                        <th style={getStaticHeaderStyle('15%', 'left')}>학교명</th>
+                        <th style={getStaticHeaderStyle('16%', 'left')}>단과대학</th>
+                        <th style={getStaticHeaderStyle('20%', 'left')}>학과명</th>
+                        <th onClick={() => handleSort('avg_gpa')} style={getSortableHeaderStyle('avg_gpa', '14%')}>
+                          통합 평균 평점 {renderSortIndicator('avg_gpa')}
+                        </th>
+                        <th onClick={() => handleSort('a_grade_ratio')} style={getSortableHeaderStyle('a_grade_ratio', '11%')}>
+                          A학점 비율 {renderSortIndicator('a_grade_ratio')}
+                        </th>
+                        <th style={getStaticHeaderStyle('11%', 'right')}>총 수강 인원</th>
+                        <th style={getStaticHeaderStyle('100px', 'center')}>상세 보기</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleDeptRankings.map((row, index) => {
+                        const isTopThree = index < 3;
+                        const cleanUniv = (row.univ_name || '').trim();
+                        const cleanCollege = (row.college_name || '').trim() || '-';
+                        const cleanDept = (row.dept_name || '').trim();
 
-                      return (
-                        <tr
-                          key={`${cleanUniv}-${cleanCollege}-${cleanDept}`}
-                          onClick={() => handleNavigateToDept(cleanUniv, cleanDept)}
-                          style={{
-                            borderBottom: '1px solid var(--border-color)',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            backgroundColor: 'var(--card-bg)',
-                            transition: 'background-color 0.15s ease'
-                          }}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-hover)')}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-bg)')}
-                        >
-                          <td style={{ padding: '14px 10px', textAlign: 'center', fontWeight: 'bold' }}>
-                            <span style={{
-                              display: 'inline-block',
-                              width: '26px',
-                              height: '26px',
-                              lineHeight: '26px',
-                              borderRadius: '50%',
-                              backgroundColor: isTopThree ? 'var(--border-color)' : 'transparent',
-                              color: isTopThree ? 'var(--accent-blue)' : 'var(--text-muted)',
-                              fontSize: '13px'
+                        return (
+                          <tr
+                            key={`${cleanUniv}-${cleanCollege}-${cleanDept}`}
+                            onClick={() => handleNavigateToDept(cleanUniv, cleanDept)}
+                            style={{
+                              borderBottom: '1px solid var(--border-color)',
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                              backgroundColor: 'var(--card-bg)',
+                              transition: 'background-color 0.15s ease'
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-hover)')}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-bg)')}
+                          >
+                            <td style={{ padding: '14px 10px', textAlign: 'center', fontWeight: 'bold' }}>
+                              <span style={{
+                                display: 'inline-block',
+                                width: '26px',
+                                height: '26px',
+                                lineHeight: '26px',
+                                borderRadius: '50%',
+                                backgroundColor: isTopThree ? 'var(--border-color)' : 'transparent',
+                                color: isTopThree ? 'var(--accent-blue)' : 'var(--text-muted)',
+                                fontSize: '13px'
+                              }}>
+                                {index + 1}
+                              </span>
+                            </td>
+                            <td title={cleanUniv} style={{ ...ellipsisCellStyle, padding: '14px 10px', color: 'var(--text-secondary)' }}>
+                              {cleanUniv}
+                            </td>
+                            <td title={cleanCollege} style={{ ...ellipsisCellStyle, padding: '14px 10px', color: 'var(--text-muted)' }}>
+                              {cleanCollege}
+                            </td>
+                            <td title={cleanDept} style={{ ...ellipsisCellStyle, padding: '14px 10px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                              {cleanDept}
+                            </td>
+                            <td style={{
+                              padding: '14px 10px',
+                              textAlign: 'right',
+                              fontWeight: sortField === 'avg_gpa' ? 'bold' : 'normal',
+                              color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)',
+                              whiteSpace: 'nowrap'
                             }}>
-                              {index + 1}
-                            </span>
-                          </td>
-                          <td title={cleanUniv} style={{ ...ellipsisCellStyle, padding: '14px 10px', color: 'var(--text-secondary)' }}>
-                            {cleanUniv}
-                          </td>
-                          <td title={cleanCollege} style={{ ...ellipsisCellStyle, padding: '14px 10px', color: 'var(--text-muted)' }}>
-                            {cleanCollege}
-                          </td>
-                          <td title={cleanDept} style={{ ...ellipsisCellStyle, padding: '14px 10px', fontWeight: '600', color: 'var(--text-primary)' }}>
-                            {cleanDept}
-                          </td>
-                          <td style={{
-                            padding: '14px 10px',
-                            textAlign: 'right',
-                            fontWeight: sortField === 'avg_gpa' ? 'bold' : 'normal',
-                            color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
-                          </td>
-                          <td style={{
-                            padding: '14px 10px',
-                            textAlign: 'right',
-                            fontWeight: sortField === 'a_grade_ratio' ? 'bold' : 'normal',
-                            color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {row.a_grade_ratio !== null && row.a_grade_ratio !== undefined ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
-                          </td>
-                          <td style={{
-                            padding: '14px 10px',
-                            textAlign: 'right',
-                            color: 'var(--text-secondary)',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {(row.total_students || 0).toLocaleString()}명
-                          </td>
-                          <td style={{ padding: '14px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>
-                            <span style={{
-                              fontSize: '12px',
-                              color: 'var(--accent-blue)',
-                              fontWeight: '600',
-                              padding: '4px 8px',
-                              borderRadius: '4px',
-                              backgroundColor: 'var(--border-color)'
+                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
+                            </td>
+                            <td style={{
+                              padding: '14px 10px',
+                              textAlign: 'right',
+                              fontWeight: sortField === 'a_grade_ratio' ? 'bold' : 'normal',
+                              color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)',
+                              whiteSpace: 'nowrap'
                             }}>
-                              학과 리포트 →
-                            </span>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
+                              {row.a_grade_ratio !== null && row.a_grade_ratio !== undefined ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
+                            </td>
+                            <td style={{ padding: '14px 10px', textAlign: 'right', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                              {(row.total_students || 0).toLocaleString()}명
+                            </td>
+                            <td style={{ padding: '14px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                              <span style={{ fontSize: '12px', color: 'var(--accent-blue)', fontWeight: '600', padding: '4px 8px', borderRadius: '4px', backgroundColor: 'var(--border-color)' }}>
+                                리포트 →
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* [모바일 뷰] 카드형 리스트 */}
+                <div className="mobile-view">
+                  {visibleDeptRankings.map((row, index) => {
+                    const isTopThree = index < 3;
+                    const cleanUniv = (row.univ_name || '').trim();
+                    const cleanCollege = (row.college_name || '').trim();
+                    const cleanDept = (row.dept_name || '').trim();
+
+                    return (
+                      <div
+                        key={`m-${cleanUniv}-${cleanCollege}-${cleanDept}`}
+                        onClick={() => handleNavigateToDept(cleanUniv, cleanDept)}
+                        style={{
+                          backgroundColor: 'var(--card-bg)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          padding: '14px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                          <span style={{
+                            display: 'inline-block',
+                            width: '24px',
+                            height: '24px',
+                            lineHeight: '24px',
+                            textAlign: 'center',
+                            borderRadius: '50%',
+                            backgroundColor: isTopThree ? 'var(--border-color)' : 'transparent',
+                            color: isTopThree ? 'var(--accent-blue)' : 'var(--text-muted)',
+                            fontSize: '12px',
+                            fontWeight: 'bold',
+                            flexShrink: 0
+                          }}>
+                            {index + 1}
+                          </span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '2px' }}>
+                              {cleanDept}
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+                              {cleanUniv} {cleanCollege ? `· ${cleanCollege}` : ''}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', backgroundColor: 'var(--table-header-bg)', padding: '10px', borderRadius: '6px' }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>평균 평점</div>
+                            <div style={{ fontSize: '13px', fontWeight: 'bold', color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)' }}>
+                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'center', borderLeft: '1px solid var(--border-color)', borderRight: '1px solid var(--border-color)' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>A학점 비율</div>
+                            <div style={{ fontSize: '13px', fontWeight: 'bold', color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)' }}>
+                              {row.a_grade_ratio !== null ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>총 수강생</div>
+                            <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
+                              {(row.total_students || 0).toLocaleString()}명
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )
           )}
 
+          {/* 하단 + 10개 더보기 버튼 영역 */}
           {!loading && hasMore && (
             <div style={{
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              padding: '16px 20px',
+              padding: '16px',
               borderTop: '1px solid var(--border-color)',
               backgroundColor: 'var(--table-header-bg)'
             }}>
@@ -772,9 +967,12 @@ function LeaderboardContent() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: '6px',
-                  padding: '10px 24px',
-                  fontSize: '14px',
+                  width: '100%',
+                  maxWidth: '320px',
+                  padding: '10px 20px',
+                  fontSize: '13px',
                   fontWeight: '600',
                   border: '1px solid var(--border-color)',
                   borderRadius: '8px',
@@ -784,16 +982,8 @@ function LeaderboardContent() {
                   boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                   transition: 'all 0.15s ease'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--card-hover)';
-                  e.currentTarget.style.borderColor = 'var(--accent-blue)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'var(--card-bg)';
-                  e.currentTarget.style.borderColor = 'var(--border-color)';
-                }}
               >
-                <span style={{ fontSize: '16px', fontWeight: 'bold' }}>+</span>
+                <span>+</span>
                 <span>10개 더보기 ({Math.min(visibleCount, activeDataLength)} / {activeDataLength})</span>
               </button>
             </div>
