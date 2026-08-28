@@ -13,6 +13,7 @@ interface DeptRankingData {
   total_students: number;
   a_students: number;
   a_grade_ratio: number;
+  max_gpa?: number;
 }
 
 interface UnivRankingData {
@@ -23,10 +24,12 @@ interface UnivRankingData {
   avg_gpa: number;
   a_students: number;
   a_grade_ratio: number;
+  max_gpa?: number;
 }
 
 type SortField = 'avg_gpa' | 'a_grade_ratio';
 type SortOrder = 'desc' | 'asc';
+type ScaleType = '4.3' | '4.5';
 
 const STEP = 10;
 const SCROLL_STORAGE_KEY = 'leaderboard_scroll_position';
@@ -37,6 +40,7 @@ function LeaderboardContent() {
   const searchParams = useSearchParams();
 
   const initialViewMode = (searchParams.get('mode') as 'univ' | 'dept') || 'univ';
+  const initialScale = (searchParams.get('scale') as ScaleType) || '4.3';
   const initialCourseFilter = (searchParams.get('course') as '전체' | '전공' | '교양') || '전체';
   const initialUniv = searchParams.get('univ') || 'ALL';
   const initialCollege = searchParams.get('college') || 'ALL';
@@ -47,6 +51,7 @@ function LeaderboardContent() {
   const initialVisibleCount = Number(searchParams.get('count')) || STEP;
 
   const [viewMode, setViewMode] = useState<'univ' | 'dept'>(initialViewMode);
+  const [scaleFilter, setScaleFilter] = useState<ScaleType>(initialScale);
   const [courseFilter, setCourseFilter] = useState<'전체' | '전공' | '교양'>(initialCourseFilter);
   const [selectedUniv, setSelectedUniv] = useState<string>(initialUniv);
   const [selectedCollege, setSelectedCollege] = useState<string>(initialCollege);
@@ -68,6 +73,7 @@ function LeaderboardContent() {
         value === '' ||
         value === 'ALL' ||
         (key === 'mode' && value === 'univ') ||
+        (key === 'scale' && value === '4.3') ||
         (key === 'course' && value === '전체') ||
         (key === 'minStudents' && Number(value) === 0) ||
         (key === 'sort' && value === 'avg_gpa') ||
@@ -116,26 +122,40 @@ function LeaderboardContent() {
     }
   }, [loading]);
 
+  const targetMaxGpa = useMemo(() => Number(scaleFilter), [scaleFilter]);
+
   const universityList = useMemo(() => {
     const univSet = new Set<string>();
     deptRankings.forEach((row) => {
-      const clean = (row.univ_name || '').trim();
-      if (clean) univSet.add(clean);
+      const rowScale = row.max_gpa !== undefined ? row.max_gpa : 4.3;
+      if (rowScale === targetMaxGpa) {
+        const clean = (row.univ_name || '').trim();
+        if (clean) univSet.add(clean);
+      }
     });
     return Array.from(univSet).sort();
-  }, [deptRankings]);
+  }, [deptRankings, targetMaxGpa]);
 
   const collegeList = useMemo(() => {
     const collegeSet = new Set<string>();
     deptRankings.forEach((row) => {
+      const rowScale = row.max_gpa !== undefined ? row.max_gpa : 4.3;
       const cleanUniv = (row.univ_name || '').trim();
       const cleanCollege = (row.college_name || '').trim();
-      if ((selectedUniv === 'ALL' || cleanUniv === selectedUniv) && cleanCollege) {
+      if (rowScale === targetMaxGpa && (selectedUniv === 'ALL' || cleanUniv === selectedUniv) && cleanCollege) {
         collegeSet.add(cleanCollege);
       }
     });
     return Array.from(collegeSet).sort();
-  }, [deptRankings, selectedUniv]);
+  }, [deptRankings, selectedUniv, targetMaxGpa]);
+
+  const handleScaleChange = (scale: ScaleType) => {
+    setScaleFilter(scale);
+    setSelectedUniv('ALL');
+    setSelectedCollege('ALL');
+    setVisibleCount(STEP);
+    syncParamsToUrl({ scale, univ: 'ALL', college: 'ALL', count: STEP });
+  };
 
   const handleUnivChange = (univ: string) => {
     setSelectedUniv(univ);
@@ -201,20 +221,22 @@ function LeaderboardContent() {
 
     return univRankings
       .filter((row) => {
+        const rowScale = row.max_gpa !== undefined ? row.max_gpa : 4.3;
         const rowUniv = (row.univ_name || '').trim();
         const rowCourse = (row.course_type || '').trim();
 
+        const matchesScale = rowScale === targetMaxGpa;
         const matchesCourse = rowCourse === courseFilter;
         const matchesSearch = !targetTerm || rowUniv.toLowerCase().includes(targetTerm);
 
-        return matchesCourse && matchesSearch;
+        return matchesScale && matchesCourse && matchesSearch;
       })
       .sort((a, b) => {
         const numA = (a[sortField] as number) || 0;
         const numB = (b[sortField] as number) || 0;
         return sortOrder === 'asc' ? numA - numB : numB - numA;
       });
-  }, [univRankings, courseFilter, searchTerm, sortField, sortOrder]);
+  }, [univRankings, targetMaxGpa, courseFilter, searchTerm, sortField, sortOrder]);
 
   const filteredDeptRankings = useMemo(() => {
     const targetUniv = selectedUniv.trim();
@@ -223,11 +245,13 @@ function LeaderboardContent() {
 
     return deptRankings
       .filter((row) => {
+        const rowScale = row.max_gpa !== undefined ? row.max_gpa : 4.3;
         const rowUniv = (row.univ_name || '').trim();
         const rowCollege = (row.college_name || '').trim();
         const rowDept = (row.dept_name || '').trim();
         const rowStudents = row.total_students || 0;
 
+        const matchesScale = rowScale === targetMaxGpa;
         const matchesUniv = targetUniv === 'ALL' || rowUniv === targetUniv;
         const matchesCollege = targetCollege === 'ALL' || rowCollege === targetCollege;
         const matchesMinStudents = rowStudents >= minStudents;
@@ -237,14 +261,14 @@ function LeaderboardContent() {
           rowCollege.toLowerCase().includes(targetTerm) ||
           rowDept.toLowerCase().includes(targetTerm);
 
-        return matchesUniv && matchesCollege && matchesMinStudents && matchesSearch;
+        return matchesScale && matchesUniv && matchesCollege && matchesMinStudents && matchesSearch;
       })
       .sort((a, b) => {
         const numA = (a[sortField] as number) || 0;
         const numB = (b[sortField] as number) || 0;
         return sortOrder === 'asc' ? numA - numB : numB - numA;
       });
-  }, [deptRankings, selectedUniv, selectedCollege, minStudents, searchTerm, sortField, sortOrder]);
+  }, [deptRankings, targetMaxGpa, selectedUniv, selectedCollege, minStudents, searchTerm, sortField, sortOrder]);
 
   const activeDataLength = viewMode === 'univ' ? filteredUnivRankings.length : filteredDeptRankings.length;
   const hasMore = visibleCount < activeDataLength;
@@ -333,7 +357,6 @@ function LeaderboardContent() {
           display: none;
         }
 
-        /* 공통 36px 폼 컨트롤 베이스 */
         .form-control-base {
           display: block;
           box-sizing: border-box !important;
@@ -357,7 +380,6 @@ function LeaderboardContent() {
           background-color: var(--card-bg) !important;
         }
 
-        /* 캡슐화 제어 카드 박스 */
         .unified-control-card {
           box-sizing: border-box !important;
           width: 100% !important;
@@ -368,7 +390,6 @@ function LeaderboardContent() {
           box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
         }
 
-        /* 학교별 가로 1행 전용 스타일 */
         .univ-row-container {
           display: flex !important;
           flex-direction: row !important;
@@ -391,7 +412,6 @@ function LeaderboardContent() {
           width: 100% !important;
         }
 
-        /* 학과별 2단 제어 전용 스타일 */
         .dept-column-container {
           display: flex !important;
           flex-direction: column !important;
@@ -444,13 +464,14 @@ function LeaderboardContent() {
 
       <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
         
-        {/* ================= 1단계: 상단 헤더 & 통합 툴바 [🏛️ 학교 | 🎓 학과 | ☀️ 모드] ================= */}
+        {/* ================= 1단계: 상단 헤더 & 분리형 컨트롤 툴바 ================= */}
         <header style={{
           paddingBottom: '12px',
           marginBottom: '12px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          flexWrap: 'wrap',
           gap: '12px'
         }}>
           <div>
@@ -465,70 +486,127 @@ function LeaderboardContent() {
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '3px',
-            backgroundColor: 'var(--table-header-bg)',
-            padding: '3px',
-            borderRadius: '8px',
-            border: '1px solid var(--border-color)'
+            flexWrap: 'wrap',
+            gap: '8px'
           }}>
-            <button
-              onClick={() => handleViewModeChange('univ')}
-              title="학교별 랭킹"
-              style={{
-                height: '30px',
-                padding: '0 8px',
-                fontSize: '12px',
-                fontWeight: viewMode === 'univ' ? 700 : 500,
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                backgroundColor: viewMode === 'univ' ? 'var(--card-bg)' : 'transparent',
-                color: viewMode === 'univ' ? 'var(--accent-blue)' : 'var(--text-muted)',
-                boxShadow: viewMode === 'univ' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none',
-                transition: 'all 0.15s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              <span>🏛️</span>
-              <span className="header-label-text">학교</span>
-            </button>
+            {/* 그룹 1: 학점 만점관 토글 래퍼 */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              backgroundColor: 'var(--table-header-bg)',
+              padding: '3px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)'
+            }}>
+              <button
+                onClick={() => handleScaleChange('4.3')}
+                style={{
+                  height: '30px',
+                  padding: '0 8px',
+                  fontSize: '12px',
+                  fontWeight: scaleFilter === '4.3' ? 700 : 500,
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  backgroundColor: scaleFilter === '4.3' ? 'var(--card-bg)' : 'transparent',
+                  color: scaleFilter === '4.3' ? 'var(--accent-blue)' : 'var(--text-muted)',
+                  boxShadow: scaleFilter === '4.3' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none',
+                  transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                4.3
+              </button>
+              <button
+                onClick={() => handleScaleChange('4.5')}
+                style={{
+                  height: '30px',
+                  padding: '0 8px',
+                  fontSize: '12px',
+                  fontWeight: scaleFilter === '4.5' ? 700 : 500,
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  backgroundColor: scaleFilter === '4.5' ? 'var(--card-bg)' : 'transparent',
+                  color: scaleFilter === '4.5' ? 'var(--accent-blue)' : 'var(--text-muted)',
+                  boxShadow: scaleFilter === '4.5' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none',
+                  transition: 'all 0.15s ease',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                4.5
+              </button>
+            </div>
 
-            <button
-              onClick={() => handleViewModeChange('dept')}
-              title="학과별 랭킹"
-              style={{
-                height: '30px',
-                padding: '0 8px',
-                fontSize: '12px',
-                fontWeight: viewMode === 'dept' ? 700 : 500,
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                backgroundColor: viewMode === 'dept' ? 'var(--card-bg)' : 'transparent',
-                color: viewMode === 'dept' ? 'var(--accent-blue)' : 'var(--text-muted)',
-                boxShadow: viewMode === 'dept' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none',
-                transition: 'all 0.15s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px'
-              }}
-            >
-              <span>🎓</span>
-              <span className="header-label-text">학과</span>
-            </button>
+            {/* 그룹 2: 학교/학과 뷰 모드 및 테마 스위처 래퍼 */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '3px',
+              backgroundColor: 'var(--table-header-bg)',
+              padding: '3px',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)'
+            }}>
+              <button
+                onClick={() => handleViewModeChange('univ')}
+                title="학교별 랭킹"
+                style={{
+                  height: '30px',
+                  padding: '0 8px',
+                  fontSize: '12px',
+                  fontWeight: viewMode === 'univ' ? 700 : 500,
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  backgroundColor: viewMode === 'univ' ? 'var(--card-bg)' : 'transparent',
+                  color: viewMode === 'univ' ? 'var(--accent-blue)' : 'var(--text-muted)',
+                  boxShadow: viewMode === 'univ' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none',
+                  transition: 'all 0.15s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <span>🏛️</span>
+                <span className="header-label-text">학교</span>
+              </button>
 
-            <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-color)', margin: '0 2px' }} />
+              <button
+                onClick={() => handleViewModeChange('dept')}
+                title="학과별 랭킹"
+                style={{
+                  height: '30px',
+                  padding: '0 8px',
+                  fontSize: '12px',
+                  fontWeight: viewMode === 'dept' ? 700 : 500,
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  backgroundColor: viewMode === 'dept' ? 'var(--card-bg)' : 'transparent',
+                  color: viewMode === 'dept' ? 'var(--accent-blue)' : 'var(--text-muted)',
+                  boxShadow: viewMode === 'dept' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none',
+                  transition: 'all 0.15s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                <span>🎓</span>
+                <span className="header-label-text">학과</span>
+              </button>
 
-            <ThemeToggle />
+              <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-color)', margin: '0 2px' }} />
+
+              <ThemeToggle />
+            </div>
           </div>
         </header>
 
-        {/* ================= 2단계: 제어 영역 (완벽한 가로 1행 정렬) ================= */}
+        {/* ================= 3단계: 세부 제어 영역 ================= */}
         <div style={{ marginBottom: '12px' }}>
           {viewMode === 'univ' ? (
-            /* 학교별 랭킹: 드롭다운(120px) + 검색창(flex:1) 가로 1행 정렬 */
             <div className="unified-control-card">
               <div className="univ-row-container">
                 <select
@@ -551,7 +629,6 @@ function LeaderboardContent() {
               </div>
             </div>
           ) : (
-            /* 학과별 랭킹: 상단 3열 드롭다운 + 하단 검색창 */
             <div className="unified-control-card">
               <div className="dept-column-container">
                 <div className="dept-grid-field">
@@ -610,7 +687,7 @@ function LeaderboardContent() {
           )}
         </div>
 
-        {/* ================= 3단계: 결과 상태 및 인라인 정렬 바 ================= */}
+        {/* ================= 4단계: 결과 상태 및 인라인 정렬 바 ================= */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -633,6 +710,8 @@ function LeaderboardContent() {
                 )}
               </>
             )}
+            <span style={{ margin: '0 4px', opacity: 0.35 }}>·</span>
+            <span>척도: <span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>{scaleFilter} 만점</span></span>
             <span style={{ margin: '0 4px', opacity: 0.35 }}>·</span>
             <span>표시: <span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>{Math.min(visibleCount, activeDataLength)}</span> / {activeDataLength}개</span>
           </div>
@@ -683,7 +762,7 @@ function LeaderboardContent() {
           </div>
         </div>
 
-        {/* ================= 4단계: 리더보드 테이블/카드 컨테이너 ================= */}
+        {/* ================= 5단계: 리더보드 테이블/카드 컨테이너 ================= */}
         <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
           
           {loading ? (
@@ -692,7 +771,7 @@ function LeaderboardContent() {
             </div>
           ) : viewMode === 'univ' ? (
             
-            /* ================= 대학교 리더보드 ================= */
+            /* 대학교 리더보드 */
             visibleUnivRankings.length === 0 ? (
               <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
                 해당 조건의 대학교 데이터가 없습니다.
@@ -760,7 +839,7 @@ function LeaderboardContent() {
                               {row.course_type === '교양' ? '-' : `${row.total_depts}개`}
                             </td>
                             <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: sortField === 'avg_gpa' ? 700 : 500, color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)' }}>
-                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 400 }}>/ 4.3</span>
+                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 400 }}>/ {scaleFilter}</span>
                             </td>
                             <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: sortField === 'a_grade_ratio' ? 700 : 500, color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)' }}>
                               {row.a_grade_ratio !== null ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
@@ -824,7 +903,7 @@ function LeaderboardContent() {
                           <div style={{ textAlign: 'center' }}>
                             <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '1px' }}>평균 평점</div>
                             <div style={{ fontSize: '12px', fontWeight: 700, color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)' }}>
-                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'}
+                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 400 }}>/ {scaleFilter}</span>
                             </div>
                           </div>
                           <div style={{ textAlign: 'center', borderLeft: '1px solid var(--border-color)', borderRight: '1px solid var(--border-color)' }}>
@@ -848,7 +927,7 @@ function LeaderboardContent() {
             )
           ) : (
             
-            /* ================= 학과별 리더보드 ================= */
+            /* 학과별 리더보드 */
             visibleDeptRankings.length === 0 ? (
               <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
                 선택한 조건과 일치하는 학과 데이터가 없습니다.
@@ -923,7 +1002,7 @@ function LeaderboardContent() {
                               color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)',
                               whiteSpace: 'nowrap'
                             }}>
-                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 400 }}>/ 4.3</span>
+                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 400 }}>/ {scaleFilter}</span>
                             </td>
                             <td style={{
                               padding: '10px 8px',
@@ -997,7 +1076,7 @@ function LeaderboardContent() {
                           <div style={{ textAlign: 'center' }}>
                             <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '1px' }}>평균 평점</div>
                             <div style={{ fontSize: '12px', fontWeight: 700, color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)' }}>
-                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'}
+                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontWeight: 400 }}>/ {scaleFilter}</span>
                             </div>
                           </div>
                           <div style={{ textAlign: 'center', borderLeft: '1px solid var(--border-color)', borderRight: '1px solid var(--border-color)' }}>
@@ -1021,7 +1100,7 @@ function LeaderboardContent() {
             )
           )}
 
-          {/* ================= 5단계: 하단 더보기 버튼 ================= */}
+          {/* ================= 6단계: 하단 더보기 버튼 ================= */}
           {!loading && hasMore && (
             <div style={{
               display: 'flex',

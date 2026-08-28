@@ -12,6 +12,7 @@ import {
 
 interface UnivRankingRow {
   univ_name: string;
+  max_gpa: number;
   course_type: string;
   total_depts: number;
   total_students: number;
@@ -34,6 +35,7 @@ interface GradeRow {
   grade: string;
   grade_point?: number | null;
   student_count: number;
+  max_gpa?: number;
 }
 
 interface GradeDist {
@@ -102,6 +104,7 @@ export default function UniversityDetailPage() {
     setMounted(true);
   }, []);
 
+  // 1. 대학교 데이터 일괄 호출
   useEffect(() => {
     async function fetchUnivData() {
       if (!univName) return;
@@ -128,11 +131,11 @@ export default function UniversityDetailPage() {
       const [majorRes, generalRes] = await Promise.all([
         supabase
           .from('grade_distribution')
-          .select('semester, grade, grade_point, student_count')
+          .select('semester, grade, grade_point, student_count, max_gpa')
           .eq('univ_name', univName),
         supabase
           .from('general_grade_distribution')
-          .select('year, semester, grade, grade_point, student_count')
+          .select('year, semester, grade, grade_point, student_count, max_gpa')
           .eq('univ_name', univName)
       ]);
 
@@ -144,10 +147,23 @@ export default function UniversityDetailPage() {
     fetchUnivData();
   }, [univName]);
 
+  // 2. 현재 대학교의 만점 기준 추출 (기본값 4.3)
+  const maxGpa = useMemo(() => {
+    if (univSummaries.length > 0 && univSummaries[0].max_gpa) {
+      return Number(univSummaries[0].max_gpa);
+    }
+    if (rawMajorGrades.length > 0 && rawMajorGrades[0].max_gpa) {
+      return Number(rawMajorGrades[0].max_gpa);
+    }
+    return 4.3;
+  }, [univSummaries, rawMajorGrades]);
+
+  // 3. 현재 선택된 교과 구분에 맞는 요약 카드 통계 추출
   const currentSummary = useMemo(() => {
     return univSummaries.find((s) => s.course_type.trim() === courseFilter) || null;
   }, [univSummaries, courseFilter]);
 
+  // 4. 등급 분포 차트 데이터 가공
   const gradeDistData: GradeDist[] = useMemo(() => {
     let targetList: GradeRow[] = [];
 
@@ -176,6 +192,7 @@ export default function UniversityDetailPage() {
       }));
   }, [rawMajorGrades, rawGeneralGrades, courseFilter]);
 
+  // 5. 교양 학기별 시계열 데이터 가공
   const generalSemesterChartData = useMemo(() => {
     const semesterMap: { [key: string]: { year: number; semName: string; totalWeighted: number; totalCount: number; aCount: number } } = {};
 
@@ -220,6 +237,7 @@ export default function UniversityDetailPage() {
       });
   }, [rawGeneralGrades]);
 
+  // 6. 상위 10개 학과 차트 데이터
   const topDeptsChartData = useMemo(() => {
     const sorted = [...deptRankings].sort((a, b) => {
       if (sortBy === 'avg_gpa') {
@@ -239,6 +257,20 @@ export default function UniversityDetailPage() {
   const chartGridColor = isDark ? '#334155' : '#f3f4f6';
   const chartAxisColor = isDark ? '#94a3b8' : '#4b5563';
 
+  // 만점 기준에 따른 동적 Ticks 배열 산출
+  const topDeptTicks = useMemo(() => {
+    if (sortBy !== 'avg_gpa') return [0, 25, 50, 75, 100];
+    return maxGpa === 4.5 
+      ? [2.0, 2.5, 3.0, 3.5, 4.0, 4.5] 
+      : [2.0, 2.5, 3.0, 3.5, 4.0, 4.3];
+  }, [maxGpa, sortBy]);
+
+  const lineChartGpaTicks = useMemo(() => {
+    return maxGpa === 4.5 
+      ? [2.5, 3.0, 3.5, 4.0, 4.5] 
+      : [2.5, 3.0, 3.5, 4.0, 4.3];
+  }, [maxGpa]);
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '32px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -257,6 +289,9 @@ export default function UniversityDetailPage() {
             <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '2px 0 0 0', wordBreak: 'keep-all' }}>
               {univName} 종합 학점 분석 리포트
             </h1>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)', display: 'inline-block', marginTop: '4px' }}>
+              적용 만점 체계: {maxGpa} 만점
+            </span>
           </div>
           <ThemeToggle />
         </div>
@@ -298,7 +333,10 @@ export default function UniversityDetailPage() {
               {courseFilter} 평균 평점
             </p>
             <p style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)', margin: 0 }}>
-              {currentSummary ? currentSummary.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
+              {currentSummary ? currentSummary.avg_gpa.toFixed(2) : '0.00'}{' '}
+              <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}>
+                / {maxGpa}
+              </span>
             </p>
           </div>
           <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
@@ -325,10 +363,10 @@ export default function UniversityDetailPage() {
           </div>
         </div>
 
-        {/* 시각화 차트 그리드: 모바일 뷰포트에서 카드가 100%에 맞춰지도록 minmax(min(100%, 480px), 1fr) 적용 */}
+        {/* 시각화 차트 그리드 */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '20px', width: '100%', boxSizing: 'border-box' }}>
           
-          {/* 좌측 차트 카드 */}
+          {/* 좌측 차트: 등급 분포 막대 차트 */}
           <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
               <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>
@@ -337,7 +375,6 @@ export default function UniversityDetailPage() {
               <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>* 터치 스크롤 지원</span>
             </div>
 
-            {/* 카드 내부 가로 스크롤 래퍼 */}
             <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
               <div style={{ minWidth: '460px', height: '300px' }}>
                 {gradeDistData.length === 0 ? (
@@ -359,7 +396,7 @@ export default function UniversityDetailPage() {
             </div>
           </div>
 
-          {/* 우측 차트 카드 */}
+          {/* 우측 차트: 교양 선택 시 [학기별 교양 평점 추이] / 그 외 [상위 10개 학과 차트 (동적 maxGpa 적용)] */}
           <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
             {courseFilter === '교양' ? (
               <>
@@ -370,7 +407,6 @@ export default function UniversityDetailPage() {
                   <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>* 터치 스크롤 지원</span>
                 </div>
 
-                {/* 카드 내부 가로 스크롤 래퍼 */}
                 <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
                   <div style={{ minWidth: '480px', height: '300px' }}>
                     {generalSemesterChartData.length === 0 ? (
@@ -394,8 +430,8 @@ export default function UniversityDetailPage() {
                           />
                           <YAxis 
                             yAxisId="left" 
-                            domain={[2.5, 4.3]} 
-                            ticks={[2.5, 3.0, 3.5, 4.0, 4.3]}
+                            domain={[2.5, maxGpa]} 
+                            ticks={lineChartGpaTicks}
                             stroke={chartAxisColor}
                             tick={{ fontSize: 11, fill: chartAxisColor }}
                             tickFormatter={(v) => v.toFixed(1)}
@@ -420,7 +456,7 @@ export default function UniversityDetailPage() {
                               boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)'
                             }}
                             formatter={(value: any, name: any) => [
-                              name === 'avg_gpa' ? `${value} / 4.3` : `${value}%`,
+                              name === 'avg_gpa' ? `${value} / ${maxGpa}` : `${value}%`,
                               name === 'avg_gpa' ? '평균 평점' : 'A학점 비율'
                             ]}
                           />
@@ -494,7 +530,6 @@ export default function UniversityDetailPage() {
                   </div>
                 </div>
 
-                {/* 카드 내부 가로 스크롤 래퍼 */}
                 <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
                   <div style={{ minWidth: '460px', height: '300px' }}>
                     {topDeptsChartData.length === 0 ? (
@@ -507,8 +542,8 @@ export default function UniversityDetailPage() {
                           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={chartGridColor} />
                           <XAxis 
                             type="number" 
-                            domain={sortBy === 'avg_gpa' ? [2.0, 4.3] : [0, 100]} 
-                            ticks={sortBy === 'avg_gpa' ? [2.0, 2.5, 3.0, 3.5, 4.0, 4.3] : [0, 25, 50, 75, 100]}
+                            domain={sortBy === 'avg_gpa' ? [2.0, maxGpa] : [0, 100]} 
+                            ticks={topDeptTicks}
                             stroke={chartAxisColor} 
                             unit={sortBy === 'avg_gpa' ? '' : '%'}
                             tick={{ fontSize: 10, fill: chartAxisColor }}
@@ -522,7 +557,7 @@ export default function UniversityDetailPage() {
                           />
                           <Tooltip 
                             formatter={(value: any) => [
-                              sortBy === 'avg_gpa' ? `${value} / 4.3` : `${value}%`, 
+                              sortBy === 'avg_gpa' ? `${value} / ${maxGpa}` : `${value}%`, 
                               sortBy === 'avg_gpa' ? '평균 평점' : 'A학점 비율'
                             ]}
                             contentStyle={{

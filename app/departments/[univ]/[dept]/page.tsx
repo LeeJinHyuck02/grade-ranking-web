@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { supabase } from '@/lib/supabase';
@@ -15,6 +15,7 @@ interface GradeRow {
   grade: string;
   grade_point: number | null;
   student_count: number;
+  max_gpa?: number;
 }
 
 interface BarChartData {
@@ -82,7 +83,7 @@ function DepartmentDetailContent() {
 
       const { data, error } = await supabase
         .from('grade_distribution')
-        .select('semester, grade, grade_point, student_count')
+        .select('semester, grade, grade_point, student_count, max_gpa')
         .eq('univ_name', univName)
         .eq('dept_name', deptName);
 
@@ -95,6 +96,14 @@ function DepartmentDetailContent() {
     }
     fetchDepartmentData();
   }, [univName, deptName]);
+
+  // 해당 학과의 만점 체계 감지
+  const maxGpa = useMemo(() => {
+    if (gradeData.length > 0 && gradeData[0].max_gpa) {
+      return Number(gradeData[0].max_gpa);
+    }
+    return 4.3;
+  }, [gradeData]);
 
   const totalStudents = gradeData.reduce((acc, cur) => acc + (cur.student_count || 0), 0);
   const validGrades = gradeData.filter((d) => d.grade_point !== null && d.grade_point !== undefined);
@@ -145,6 +154,13 @@ function DepartmentDetailContent() {
   const chartGridColor = isDark ? '#334155' : '#f3f4f6';
   const chartAxisColor = isDark ? '#94a3b8' : '#4b5563';
 
+  // 만점 기준에 따른 Y축 Ticks
+  const deptGpaTicks = useMemo(() => {
+    return maxGpa === 4.5 
+      ? [2.0, 2.5, 3.0, 3.5, 4.0, 4.5] 
+      : [2.0, 2.5, 3.0, 3.5, 4.0, 4.3];
+  }, [maxGpa]);
+
   const handleGoBack = () => {
     if (fromSource === 'univ') {
       router.push(`/universities/${encodeURIComponent(univName)}`);
@@ -168,7 +184,9 @@ function DepartmentDetailContent() {
         {/* 상단 네비게이션 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', gap: '12px' }}>
           <div style={{ minWidth: 0 }}>
-            <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-muted)', marginTop: '2px' }}>{univName}</span>
+            <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-muted)', marginTop: '2px' }}>
+              {univName} ({maxGpa} 만점)
+            </span>
             <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '2px 0 0 0', wordBreak: 'keep-all' }}>
               {deptName} 학점 분석 리포트
             </h1>
@@ -192,7 +210,10 @@ function DepartmentDetailContent() {
           <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 6px 0', fontWeight: '500' }}>전체 평균 평점</p>
             <p style={{ fontSize: '28px', fontWeight: 'bold', color: 'var(--accent-blue)', margin: 0 }}>
-              {avgGpa} <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
+              {avgGpa}{' '}
+              <span style={{ fontSize: '14px', color: 'var(--text-muted)', fontWeight: 'normal' }}>
+                / {maxGpa}
+              </span>
             </p>
           </div>
           <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', boxSizing: 'border-box' }}>
@@ -216,7 +237,6 @@ function DepartmentDetailContent() {
                 <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>* 터치 스크롤 지원</span>
               </div>
 
-              {/* 가로 스크롤 래퍼 */}
               <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
                 <div style={{ minWidth: '460px', height: '300px' }}>
                   <ResponsiveContainer width="100%" height={300}>
@@ -231,6 +251,43 @@ function DepartmentDetailContent() {
                 </div>
               </div>
             </div>
+
+            {/* 선 그래프 카드 (동적 maxGpa 적용) */}
+            <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
+                <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>학기별 평균 평점 추이</h2>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>* 터치 스크롤 지원</span>
+              </div>
+
+              <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
+                <div style={{ minWidth: '460px', height: '300px' }}>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={lineChartData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor} />
+                      <XAxis dataKey="semester" stroke={chartAxisColor} tick={{ fontSize: 11 }} />
+                      <YAxis 
+                        domain={[2.0, maxGpa]} 
+                        ticks={deptGpaTicks}
+                        stroke={chartAxisColor} 
+                        tick={{ fontSize: 11 }} 
+                        tickFormatter={(v) => v.toFixed(1)}
+                      />
+                      <Tooltip 
+                        formatter={(value: any) => [`${value} / ${maxGpa}`, '평균 평점']}
+                        contentStyle={{
+                          backgroundColor: 'var(--card-bg)',
+                          borderColor: 'var(--border-color)',
+                          borderRadius: '8px',
+                          color: 'var(--text-primary)'
+                        }}
+                      />
+                      <Line type="monotone" dataKey="avg_gpa" stroke="var(--accent-green)" strokeWidth={3} dot={{ r: 4 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
           </div>
         )}
 
