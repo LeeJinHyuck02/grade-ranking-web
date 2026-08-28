@@ -344,7 +344,7 @@ function LeaderboardContent() {
           height: 46px !important;
           min-height: 46px !important;
           padding: 0 14px !important;
-          font-size: 14px !important;
+          font-size: 16px !important;
           line-height: normal !important;
           border: 1px solid var(--border-color) !important;
           border-radius: 8px !important;
@@ -424,10 +424,10 @@ function LeaderboardContent() {
         <header style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 6px 0' }}>
-              전국 대학 학점 분석 및 랭킹 리더보드
+              대학 학점 리더보드
             </h1>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-              대학알리미 공시 데이터를 기반으로 산출된 성적 통계 순위입니다.
+              대학알리미 공시 데이터 기반
             </p>
           </div>
           <ThemeToggle />
