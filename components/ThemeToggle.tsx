@@ -1,41 +1,65 @@
 'use client';
 
-import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [mounted, setMounted] = useState<boolean>(false);
 
-  // SSR 하이드레이션 불일치 방지
   useEffect(() => {
     setMounted(true);
+    // 1. 로컬스토리지 확인 -> 2. 시스템 OS 설정 확인 -> 3. 기본값 'dark'
+    const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    } else {
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const initialTheme = systemPrefersDark ? 'dark' : 'light';
+      setTheme(initialTheme);
+      document.documentElement.setAttribute('data-theme', initialTheme);
+      document.documentElement.classList.toggle('dark', initialTheme === 'dark');
+    }
   }, []);
 
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('theme', nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    document.documentElement.classList.toggle('dark', nextTheme === 'dark');
+  };
+
   if (!mounted) {
-    return <div style={{ width: '40px', height: '40px' }} />;
+    return (
+      <div style={{ width: '30px', height: '30px' }} />
+    );
   }
 
   return (
     <button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      aria-label="테마 전환"
+      onClick={toggleTheme}
+      title={theme === 'dark' ? '라이트 모드로 전환' : '다크 모드로 전환'}
+      aria-label="화면 테마 전환"
       style={{
-        padding: '8px 12px',
-        borderRadius: '8px',
-        border: '1px solid var(--border-color)',
-        backgroundColor: 'var(--card-bg)',
-        color: 'var(--text-primary)',
+        width: '30px',
+        height: '30px',
+        padding: 0,
         fontSize: '14px',
-        fontWeight: '600',
+        border: 'none',
+        borderRadius: '6px',
         cursor: 'pointer',
+        backgroundColor: 'transparent',
         display: 'flex',
         alignItems: 'center',
-        gap: '6px',
-        transition: 'background-color 0.2s, color 0.2s'
+        justifyContent: 'center',
+        transition: 'background-color 0.15s ease'
       }}
+      onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-hover)')}
+      onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
     >
-      {theme === 'dark' ? '☀️ 라이트 모드' : '🌙 다크 모드'}
+      {theme === 'dark' ? '☀️' : '🌙'}
     </button>
   );
 }

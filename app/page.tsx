@@ -333,10 +333,10 @@ function LeaderboardContent() {
           display: none;
         }
 
-        .compact-control {
-          display: block !important;
+        /* 공통 36px 폼 컨트롤 베이스 */
+        .form-control-base {
+          display: block;
           box-sizing: border-box !important;
-          width: 100% !important;
           height: 36px !important;
           min-height: 36px !important;
           padding: 0 10px !important;
@@ -351,67 +351,63 @@ function LeaderboardContent() {
           transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
         }
 
-        .compact-control:focus {
+        .form-control-base:focus {
           border-color: var(--accent-blue) !important;
           box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2) !important;
           background-color: var(--card-bg) !important;
         }
 
-        .omnibar-container {
-          display: flex !important;
-          align-items: center !important;
+        /* 캡슐화 제어 카드 박스 */
+        .unified-control-card {
           box-sizing: border-box !important;
           width: 100% !important;
-          height: 40px !important;
-          min-height: 40px !important;
-          border: 1px solid var(--border-color) !important;
-          border-radius: 8px !important;
-          background-color: var(--card-bg) !important;
-          overflow: hidden !important;
-          transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
-        }
-
-        .omnibar-container:focus-within {
-          border-color: var(--accent-blue) !important;
-          box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2) !important;
-        }
-
-        .omnibar-select {
-          height: 100% !important;
-          width: 105px !important;
-          min-width: 105px !important;
-          border: none !important;
-          border-right: 1px solid var(--border-color) !important;
-          background-color: var(--table-header-bg) !important;
-          color: var(--text-primary) !important;
-          font-size: 13px !important;
-          font-weight: 600 !important;
-          padding: 0 8px !important;
-          outline: none !important;
-          cursor: pointer !important;
-        }
-
-        .omnibar-input {
-          flex: 1 !important;
-          height: 100% !important;
-          border: none !important;
-          background-color: transparent !important;
-          color: var(--text-primary) !important;
-          font-size: 14px !important;
-          padding: 0 12px !important;
-          outline: none !important;
-        }
-
-        .dept-control-card {
-          box-sizing: border-box !important;
           background-color: var(--card-bg) !important;
           border: 1px solid var(--border-color) !important;
           border-radius: 10px !important;
           padding: 10px !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+        }
+
+        /* 학교별 가로 1행 전용 스타일 */
+        .univ-row-container {
+          display: flex !important;
+          flex-direction: row !important;
+          align-items: center !important;
+          gap: 8px !important;
+          width: 100% !important;
+        }
+
+        .univ-select-field {
+          width: 120px !important;
+          min-width: 110px !important;
+          max-width: 130px !important;
+          flex-shrink: 0 !important;
+          cursor: pointer !important;
+        }
+
+        .univ-input-field {
+          flex: 1 1 0% !important;
+          min-width: 0 !important;
+          width: 100% !important;
+        }
+
+        /* 학과별 2단 제어 전용 스타일 */
+        .dept-column-container {
           display: flex !important;
           flex-direction: column !important;
           gap: 8px !important;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+          width: 100% !important;
+        }
+
+        .dept-grid-field {
+          display: grid !important;
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+          gap: 6px !important;
+          width: 100% !important;
+        }
+
+        .dept-input-field {
+          width: 100% !important;
         }
 
         @media (max-width: 768px) {
@@ -424,30 +420,34 @@ function LeaderboardContent() {
             gap: 8px;
             padding: 8px;
           }
-          .compact-control,
-          .omnibar-input {
+          .form-control-base {
             font-size: 16px !important;
           }
-          .dept-grid {
+          .dept-grid-field {
             gap: 4px !important;
           }
-          .dept-grid select {
+          .dept-grid-field select {
             font-size: 12px !important;
             padding: 0 4px !important;
           }
           .header-label-text {
             display: none !important;
           }
+          .univ-select-field {
+            width: 105px !important;
+            min-width: 100px !important;
+            font-size: 13px !important;
+            padding: 0 6px !important;
+          }
         }
       `}</style>
 
       <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
         
-        {/* ================= 1단계: 상단 헤더 & 통합 툴바 [학교 | 학과 | 모드] ================= */}
+        {/* ================= 1단계: 상단 헤더 & 통합 툴바 [🏛️ 학교 | 🎓 학과 | ☀️ 모드] ================= */}
         <header style={{
-          borderBottom: '1px solid var(--border-color)',
-          paddingBottom: '10px',
-          marginBottom: '10px',
+          paddingBottom: '12px',
+          marginBottom: '12px',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -462,7 +462,6 @@ function LeaderboardContent() {
             </p>
           </div>
 
-          {/* 헤더 우측: [학교 | 학과 | 모드] 순서의 컴팩트 툴바 */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
@@ -472,7 +471,6 @@ function LeaderboardContent() {
             borderRadius: '8px',
             border: '1px solid var(--border-color)'
           }}>
-            {/* 1. 학교 버튼 */}
             <button
               onClick={() => handleViewModeChange('univ')}
               title="학교별 랭킹"
@@ -497,7 +495,6 @@ function LeaderboardContent() {
               <span className="header-label-text">학교</span>
             </button>
 
-            {/* 2. 학과 버튼 */}
             <button
               onClick={() => handleViewModeChange('dept')}
               title="학과별 랭킹"
@@ -522,90 +519,93 @@ function LeaderboardContent() {
               <span className="header-label-text">학과</span>
             </button>
 
-            {/* 수직 분할선 */}
             <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-color)', margin: '0 2px' }} />
 
-            {/* 3. 모드(라이트/다크) 버튼 */}
             <ThemeToggle />
           </div>
         </header>
 
-        {/* ================= 2단계: 제어 영역 (본문 상단 탭 제거 및 바로 진입) ================= */}
-        <div style={{ marginBottom: '10px' }}>
+        {/* ================= 2단계: 제어 영역 (완벽한 가로 1행 정렬) ================= */}
+        <div style={{ marginBottom: '12px' }}>
           {viewMode === 'univ' ? (
-            /* 학교별 랭킹: 일체형 옴니바 */
-            <div className="omnibar-container">
-              <select
-                className="omnibar-select"
-                value={courseFilter}
-                onChange={(e) => handleCourseFilterChange(e.target.value as '전체' | '전공' | '교양')}
-              >
-                <option value="전체">전체 교과</option>
-                <option value="전공">전공만</option>
-                <option value="교양">교양만</option>
-              </select>
-              <input
-                type="text"
-                className="omnibar-input"
-                placeholder="학교명 검색..."
-                value={searchTerm}
-                onChange={(e) => handleSearchChange(e.target.value)}
-              />
+            /* 학교별 랭킹: 드롭다운(120px) + 검색창(flex:1) 가로 1행 정렬 */
+            <div className="unified-control-card">
+              <div className="univ-row-container">
+                <select
+                  className="form-control-base univ-select-field"
+                  value={courseFilter}
+                  onChange={(e) => handleCourseFilterChange(e.target.value as '전체' | '전공' | '교양')}
+                >
+                  <option value="전체">전체 교과</option>
+                  <option value="전공">전공 과목</option>
+                  <option value="교양">교양 과목</option>
+                </select>
+
+                <input
+                  type="text"
+                  className="form-control-base univ-input-field"
+                  placeholder="학교명 검색..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                />
+              </div>
             </div>
           ) : (
-            /* 학과별 랭킹: 캡슐화 제어 카드 패널 */
-            <div className="dept-control-card">
-              <div className="dept-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '6px', width: '100%' }}>
-                <select
-                  className="compact-control"
-                  value={selectedUniv}
-                  onChange={(e) => handleUnivChange(e.target.value)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <option value="ALL">전체 대학교</option>
-                  {universityList.map((univ) => (
-                    <option key={univ} value={univ}>{univ}</option>
-                  ))}
-                </select>
+            /* 학과별 랭킹: 상단 3열 드롭다운 + 하단 검색창 */
+            <div className="unified-control-card">
+              <div className="dept-column-container">
+                <div className="dept-grid-field">
+                  <select
+                    className="form-control-base"
+                    value={selectedUniv}
+                    onChange={(e) => handleUnivChange(e.target.value)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <option value="ALL">전체 대학교</option>
+                    {universityList.map((univ) => (
+                      <option key={univ} value={univ}>{univ}</option>
+                    ))}
+                  </select>
 
-                <select
-                  className="compact-control"
-                  value={selectedCollege}
-                  onChange={(e) => handleCollegeChange(e.target.value)}
-                  disabled={collegeList.length === 0}
-                  style={{
-                    cursor: collegeList.length === 0 ? 'not-allowed' : 'pointer',
-                    opacity: collegeList.length === 0 ? 0.6 : 1
-                  }}
-                >
-                  <option value="ALL">{collegeList.length === 0 ? '단과대 없음' : '전체 단과대'}</option>
-                  {collegeList.map((col) => (
-                    <option key={col} value={col}>{col}</option>
-                  ))}
-                </select>
+                  <select
+                    className="form-control-base"
+                    value={selectedCollege}
+                    onChange={(e) => handleCollegeChange(e.target.value)}
+                    disabled={collegeList.length === 0}
+                    style={{
+                      cursor: collegeList.length === 0 ? 'not-allowed' : 'pointer',
+                      opacity: collegeList.length === 0 ? 0.6 : 1
+                    }}
+                  >
+                    <option value="ALL">{collegeList.length === 0 ? '단과대 없음' : '전체 단과대'}</option>
+                    {collegeList.map((col) => (
+                      <option key={col} value={col}>{col}</option>
+                    ))}
+                  </select>
 
-                <select
-                  className="compact-control"
-                  value={minStudents}
-                  onChange={(e) => handleMinStudentsChange(Number(e.target.value))}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <option value={0}>인원 전체</option>
-                  <option value={30}>30명 이상</option>
-                  <option value={50}>50명 이상</option>
-                  <option value={100}>100명 이상</option>
-                  <option value={200}>200명 이상</option>
-                  <option value={500}>500명 이상</option>
-                </select>
+                  <select
+                    className="form-control-base"
+                    value={minStudents}
+                    onChange={(e) => handleMinStudentsChange(Number(e.target.value))}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <option value={0}>인원 전체</option>
+                    <option value={30}>30명 이상</option>
+                    <option value={50}>50명 이상</option>
+                    <option value={100}>100명 이상</option>
+                    <option value={200}>200명 이상</option>
+                    <option value={500}>500명 이상</option>
+                  </select>
+                </div>
+
+                <input
+                  type="text"
+                  className="form-control-base dept-input-field"
+                  placeholder="학과명 또는 키워드 검색..."
+                  value={searchTerm}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                />
               </div>
-
-              <input
-                type="text"
-                className="compact-control"
-                placeholder="학과명 또는 키워드 검색..."
-                value={searchTerm}
-                onChange={(e) => handleSearchChange(e.target.value)}
-              />
             </div>
           )}
         </div>
@@ -617,12 +617,9 @@ function LeaderboardContent() {
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '6px',
-          paddingTop: '6px',
-          paddingBottom: '6px',
-          borderTop: '1px solid var(--border-color)',
-          marginBottom: '6px'
+          padding: '0 2px',
+          marginBottom: '8px'
         }}>
-          {/* 좌측: 기준 요약 정보 */}
           <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
             {viewMode === 'univ' ? (
               <>기준: <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{courseFilter === '전체' ? '전체(전공+교양)' : `${courseFilter} 과목`}</span></>
@@ -640,7 +637,6 @@ function LeaderboardContent() {
             <span>표시: <span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>{Math.min(visibleCount, activeDataLength)}</span> / {activeDataLength}개</span>
           </div>
 
-          {/* 우측: 인라인 컴팩트 정렬 버튼 */}
           <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
             <button
               onClick={() => handleSort('avg_gpa')}
@@ -1025,7 +1021,7 @@ function LeaderboardContent() {
             )
           )}
 
-          {/* ================= 하단 더보기 버튼 ================= */}
+          {/* ================= 5단계: 하단 더보기 버튼 ================= */}
           {!loading && hasMore && (
             <div style={{
               display: 'flex',
