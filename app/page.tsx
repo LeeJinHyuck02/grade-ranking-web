@@ -333,19 +333,18 @@ function LeaderboardContent() {
           display: none;
         }
 
-        /* 38px 컴팩트 인풋/셀렉트 기본형 */
         .compact-control {
           display: block !important;
           box-sizing: border-box !important;
           width: 100% !important;
-          height: 38px !important;
-          min-height: 38px !important;
+          height: 36px !important;
+          min-height: 36px !important;
           padding: 0 10px !important;
           font-size: 13px !important;
           line-height: normal !important;
           border: 1px solid var(--border-color) !important;
-          border-radius: 8px !important;
-          background-color: var(--card-bg) !important;
+          border-radius: 6px !important;
+          background-color: var(--table-header-bg) !important;
           color: var(--text-primary) !important;
           outline: none !important;
           margin: 0 !important;
@@ -355,9 +354,9 @@ function LeaderboardContent() {
         .compact-control:focus {
           border-color: var(--accent-blue) !important;
           box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2) !important;
+          background-color: var(--card-bg) !important;
         }
 
-        /* 학교별 랭킹 일체형 옴니바 컨테이너 */
         .omnibar-container {
           display: flex !important;
           align-items: center !important;
@@ -403,6 +402,18 @@ function LeaderboardContent() {
           outline: none !important;
         }
 
+        .dept-control-card {
+          box-sizing: border-box !important;
+          background-color: var(--card-bg) !important;
+          border: 1px solid var(--border-color) !important;
+          border-radius: 10px !important;
+          padding: 10px !important;
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 8px !important;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.08) !important;
+        }
+
         @media (max-width: 768px) {
           .desktop-view {
             display: none !important;
@@ -424,13 +435,24 @@ function LeaderboardContent() {
             font-size: 12px !important;
             padding: 0 4px !important;
           }
+          .header-label-text {
+            display: none !important;
+          }
         }
       `}</style>
 
       <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
         
-        {/* ================= 1단계: 상단 헤더 ================= */}
-        <header style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        {/* ================= 1단계: 상단 헤더 & 통합 툴바 [학교 | 학과 | 모드] ================= */}
+        <header style={{
+          borderBottom: '1px solid var(--border-color)',
+          paddingBottom: '10px',
+          marginBottom: '10px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '12px'
+        }}>
           <div>
             <h1 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 2px 0' }}>
               대학 학점 리더보드
@@ -439,62 +461,79 @@ function LeaderboardContent() {
               대학알리미 공시 데이터 기반
             </p>
           </div>
-          <ThemeToggle />
+
+          {/* 헤더 우측: [학교 | 학과 | 모드] 순서의 컴팩트 툴바 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '3px',
+            backgroundColor: 'var(--table-header-bg)',
+            padding: '3px',
+            borderRadius: '8px',
+            border: '1px solid var(--border-color)'
+          }}>
+            {/* 1. 학교 버튼 */}
+            <button
+              onClick={() => handleViewModeChange('univ')}
+              title="학교별 랭킹"
+              style={{
+                height: '30px',
+                padding: '0 8px',
+                fontSize: '12px',
+                fontWeight: viewMode === 'univ' ? 700 : 500,
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                backgroundColor: viewMode === 'univ' ? 'var(--card-bg)' : 'transparent',
+                color: viewMode === 'univ' ? 'var(--accent-blue)' : 'var(--text-muted)',
+                boxShadow: viewMode === 'univ' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none',
+                transition: 'all 0.15s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <span>🏛️</span>
+              <span className="header-label-text">학교</span>
+            </button>
+
+            {/* 2. 학과 버튼 */}
+            <button
+              onClick={() => handleViewModeChange('dept')}
+              title="학과별 랭킹"
+              style={{
+                height: '30px',
+                padding: '0 8px',
+                fontSize: '12px',
+                fontWeight: viewMode === 'dept' ? 700 : 500,
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                backgroundColor: viewMode === 'dept' ? 'var(--card-bg)' : 'transparent',
+                color: viewMode === 'dept' ? 'var(--accent-blue)' : 'var(--text-muted)',
+                boxShadow: viewMode === 'dept' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none',
+                transition: 'all 0.15s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <span>🎓</span>
+              <span className="header-label-text">학과</span>
+            </button>
+
+            {/* 수직 분할선 */}
+            <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--border-color)', margin: '0 2px' }} />
+
+            {/* 3. 모드(라이트/다크) 버튼 */}
+            <ThemeToggle />
+          </div>
         </header>
 
-        {/* ================= 2단계: 모드 탭 (50:50 세그먼트) ================= */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          backgroundColor: 'var(--table-header-bg)',
-          padding: '3px',
-          borderRadius: '8px',
-          border: '1px solid var(--border-color)',
-          gap: '3px',
-          marginBottom: '8px'
-        }}>
-          <button
-            onClick={() => handleViewModeChange('univ')}
-            style={{
-              padding: '7px 0',
-              fontSize: '13px',
-              fontWeight: viewMode === 'univ' ? 700 : 500,
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              backgroundColor: viewMode === 'univ' ? 'var(--card-bg)' : 'transparent',
-              color: viewMode === 'univ' ? 'var(--accent-blue)' : 'var(--text-muted)',
-              boxShadow: viewMode === 'univ' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none',
-              transition: 'all 0.15s ease',
-              textAlign: 'center'
-            }}
-          >
-            학교별 랭킹
-          </button>
-          <button
-            onClick={() => handleViewModeChange('dept')}
-            style={{
-              padding: '7px 0',
-              fontSize: '13px',
-              fontWeight: viewMode === 'dept' ? 700 : 500,
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              backgroundColor: viewMode === 'dept' ? 'var(--card-bg)' : 'transparent',
-              color: viewMode === 'dept' ? 'var(--accent-blue)' : 'var(--text-muted)',
-              boxShadow: viewMode === 'dept' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none',
-              transition: 'all 0.15s ease',
-              textAlign: 'center'
-            }}
-          >
-            학과별 랭킹
-          </button>
-        </div>
-
-        {/* ================= 3단계: 계획 C 일체형 폼 컨트롤 ================= */}
-        <div style={{ marginBottom: '8px' }}>
+        {/* ================= 2단계: 제어 영역 (본문 상단 탭 제거 및 바로 진입) ================= */}
+        <div style={{ marginBottom: '10px' }}>
           {viewMode === 'univ' ? (
-            /* 학교별 랭킹: 과목 선택 + 검색 인풋이 결합된 단일 옴니바 */
+            /* 학교별 랭킹: 일체형 옴니바 */
             <div className="omnibar-container">
               <select
                 className="omnibar-select"
@@ -514,8 +553,8 @@ function LeaderboardContent() {
               />
             </div>
           ) : (
-            /* 학과별 랭킹: 3열 초슬림 그리드 + 밀착형 검색창 */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            /* 학과별 랭킹: 캡슐화 제어 카드 패널 */
+            <div className="dept-control-card">
               <div className="dept-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '6px', width: '100%' }}>
                 <select
                   className="compact-control"
@@ -571,7 +610,7 @@ function LeaderboardContent() {
           )}
         </div>
 
-        {/* ================= 4단계: 상태 및 인라인 정렬 바 ================= */}
+        {/* ================= 3단계: 결과 상태 및 인라인 정렬 바 ================= */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -583,7 +622,7 @@ function LeaderboardContent() {
           borderTop: '1px solid var(--border-color)',
           marginBottom: '6px'
         }}>
-          {/* 좌측: 기준 및 개수 요약 */}
+          {/* 좌측: 기준 요약 정보 */}
           <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
             {viewMode === 'univ' ? (
               <>기준: <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{courseFilter === '전체' ? '전체(전공+교양)' : `${courseFilter} 과목`}</span></>
@@ -601,7 +640,7 @@ function LeaderboardContent() {
             <span>표시: <span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>{Math.min(visibleCount, activeDataLength)}</span> / {activeDataLength}개</span>
           </div>
 
-          {/* 우측: 초소형 인라인 정렬 토글 */}
+          {/* 우측: 인라인 컴팩트 정렬 버튼 */}
           <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
             <button
               onClick={() => handleSort('avg_gpa')}
@@ -648,7 +687,7 @@ function LeaderboardContent() {
           </div>
         </div>
 
-        {/* ================= 5단계: 리더보드 테이블/카드 컨테이너 ================= */}
+        {/* ================= 4단계: 리더보드 테이블/카드 컨테이너 ================= */}
         <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
           
           {loading ? (
@@ -986,7 +1025,7 @@ function LeaderboardContent() {
             )
           )}
 
-          {/* ================= 6단계: 하단 더보기 버튼 ================= */}
+          {/* ================= 하단 더보기 버튼 ================= */}
           {!loading && hasMore && (
             <div style={{
               display: 'flex',
