@@ -281,10 +281,10 @@ function LeaderboardContent() {
 
   const renderSortIndicator = (field: SortField) => {
     if (sortField !== field) {
-      return <span style={{ opacity: 0.35, marginLeft: '3px', fontSize: '10px' }}>⇅</span>;
+      return <span style={{ opacity: 0.35, marginLeft: '4px', fontSize: '10px' }}>⇅</span>;
     }
     return (
-      <span style={{ marginLeft: '3px', fontSize: '10px', color: 'var(--accent-blue)', fontWeight: 700 }}>
+      <span style={{ marginLeft: '4px', fontSize: '10px', color: 'var(--accent-blue)', fontWeight: 700 }}>
         {sortOrder === 'desc' ? '▼' : '▲'}
       </span>
     );
@@ -333,6 +333,7 @@ function LeaderboardContent() {
           display: none;
         }
 
+        /* 폼 컨트롤 정규화 (40px) */
         .unified-form-control {
           display: block !important;
           box-sizing: border-box !important;
@@ -356,7 +357,8 @@ function LeaderboardContent() {
           box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2) !important;
         }
 
-        .unified-toggle-container {
+        /* 통일된 40px 세그먼트 컨테이너 */
+        .unified-segment-container {
           display: flex !important;
           align-items: center !important;
           box-sizing: border-box !important;
@@ -370,7 +372,7 @@ function LeaderboardContent() {
           gap: 3px !important;
         }
 
-        .unified-toggle-btn {
+        .unified-segment-btn {
           flex: 1 !important;
           height: 32px !important;
           padding: 0 8px !important;
@@ -409,10 +411,10 @@ function LeaderboardContent() {
         }
       `}</style>
 
-      <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+      <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
         
-        {/* 상단 헤더 */}
-        <header style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        {/* ================= 상단 헤더 ================= */}
+        <header style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '14px', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h1 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 4px 0' }}>
               대학 학점 리더보드
@@ -424,70 +426,58 @@ function LeaderboardContent() {
           <ThemeToggle />
         </header>
 
-        {/* 1차 탭: 50:50 분할 세그먼트 컨트롤 */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          backgroundColor: 'var(--table-header-bg)',
-          padding: '4px',
-          borderRadius: '10px',
-          border: '1px solid var(--border-color)',
-          gap: '4px'
-        }}>
-          <button
-            onClick={() => handleViewModeChange('univ')}
-            style={{
-              padding: '9px 0',
-              fontSize: '14px',
-              fontWeight: viewMode === 'univ' ? 700 : 500,
-              border: 'none',
-              borderRadius: '7px',
-              cursor: 'pointer',
-              backgroundColor: viewMode === 'univ' ? 'var(--card-bg)' : 'transparent',
-              color: viewMode === 'univ' ? 'var(--accent-blue)' : 'var(--text-muted)',
-              boxShadow: viewMode === 'univ' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
-              transition: 'all 0.15s ease',
-              textAlign: 'center'
-            }}
-          >
-            학교별 랭킹
-          </button>
-          <button
-            onClick={() => handleViewModeChange('dept')}
-            style={{
-              padding: '9px 0',
-              fontSize: '14px',
-              fontWeight: viewMode === 'dept' ? 700 : 500,
-              border: 'none',
-              borderRadius: '7px',
-              cursor: 'pointer',
-              backgroundColor: viewMode === 'dept' ? 'var(--card-bg)' : 'transparent',
-              color: viewMode === 'dept' ? 'var(--accent-blue)' : 'var(--text-muted)',
-              boxShadow: viewMode === 'dept' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
-              transition: 'all 0.15s ease',
-              textAlign: 'center'
-            }}
-          >
-            학과별 랭킹
-          </button>
+        {/* ================= 1단계: 랭킹 선택 탭 (상단 내비게이션 바) ================= */}
+        <div style={{ marginBottom: '16px' }}>
+          <div className="unified-segment-container">
+            <button
+              onClick={() => handleViewModeChange('univ')}
+              className="unified-segment-btn"
+              style={{
+                fontWeight: viewMode === 'univ' ? 700 : 500,
+                backgroundColor: viewMode === 'univ' ? 'var(--card-bg)' : 'transparent',
+                color: viewMode === 'univ' ? 'var(--accent-blue)' : 'var(--text-muted)',
+                boxShadow: viewMode === 'univ' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none'
+              }}
+            >
+              학교별 랭킹
+            </button>
+            <button
+              onClick={() => handleViewModeChange('dept')}
+              className="unified-segment-btn"
+              style={{
+                fontWeight: viewMode === 'dept' ? 700 : 500,
+                backgroundColor: viewMode === 'dept' ? 'var(--card-bg)' : 'transparent',
+                color: viewMode === 'dept' ? 'var(--accent-blue)' : 'var(--text-muted)',
+                boxShadow: viewMode === 'dept' ? '0 1px 2px rgba(0,0,0,0.12)' : 'none'
+              }}
+            >
+              학과별 랭킹
+            </button>
+          </div>
         </div>
 
-        {/* 제어 패널: 1행(필터) + 1행(검색창)의 완벽한 2단 대칭 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {/* ================= 2단계: 필터 & 검색 제어 구역 (중간 폼 패널) ================= */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '8px',
+          paddingBottom: '16px',
+          marginBottom: '14px'
+        }}>
           
           {viewMode === 'univ' ? (
-            /* 학교별 랭킹 필터: 과목 구분 100% 3분할 캡슐 토글 */
-            <div className="unified-toggle-container">
+            /* 학교별 랭킹 필터: 상단 탭과 100% 동일한 디자인 토큰 적용 */
+            <div className="unified-segment-container">
               {(['전체', '전공', '교양'] as const).map((type) => (
                 <button
                   key={type}
-                  className="unified-toggle-btn"
+                  className="unified-segment-btn"
                   onClick={() => handleCourseFilterChange(type)}
                   style={{
                     fontWeight: courseFilter === type ? 700 : 500,
                     backgroundColor: courseFilter === type ? 'var(--card-bg)' : 'transparent',
                     color: courseFilter === type ? 'var(--accent-blue)' : 'var(--text-muted)',
-                    boxShadow: courseFilter === type ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                    boxShadow: courseFilter === type ? '0 1px 2px rgba(0,0,0,0.12)' : 'none'
                   }}
                 >
                   {type === '전체' ? '전체 교과' : `${type}만`}
@@ -495,7 +485,7 @@ function LeaderboardContent() {
               ))}
             </div>
           ) : (
-            /* 학과별 랭킹 필터: 대학교 / 단과대학 / 인원 수 3분할 가로 그리드 */
+            /* 학과별 랭킹 필터: 대학교 / 단과대 / 인원수 가로 3분할 그리드 */
             <div className="dept-filters-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '8px', width: '100%' }}>
               <select
                 className="unified-form-control"
@@ -541,7 +531,7 @@ function LeaderboardContent() {
             </div>
           )}
 
-          {/* 공통 검색창: 하단 100% 배치 */}
+          {/* 검색 입력창 (가로 100%) */}
           <div style={{ width: '100%' }}>
             <input
               type="text"
@@ -554,16 +544,19 @@ function LeaderboardContent() {
 
         </div>
 
-        {/* 계획 B 적용: 상태 요약 및 인라인 정렬 바 */}
+        {/* ================= 3단계: 기준 표시 & 인라인 정렬 바 (상단과 명확히 분리) ================= */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
           gap: '8px',
-          padding: '2px 2px'
+          paddingTop: '12px',
+          paddingBottom: '10px',
+          borderTop: '1px solid var(--border-color)',
+          marginBottom: '2px'
         }}>
-          {/* 좌측: 기준 및 표시 개수 */}
+          {/* 좌측: 기준 조건 및 조회 개수 */}
           <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
             {viewMode === 'univ' ? (
               <>기준: <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{courseFilter === '전체' ? '전체(전공+교양)' : `${courseFilter} 과목`}</span></>
@@ -581,16 +574,17 @@ function LeaderboardContent() {
             <span>표시: <span style={{ color: 'var(--accent-blue)', fontWeight: 600 }}>{Math.min(visibleCount, activeDataLength)}</span> / {activeDataLength}개</span>
           </div>
 
-          {/* 우측: 인라인 컴팩트 정렬 버튼 그룹 */}
-          <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          {/* 우측: 슬림 캡슐형 정렬 토글 버튼 */}
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
             <button
               onClick={() => handleSort('avg_gpa')}
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '2px',
-                padding: '4px 8px',
-                fontSize: '11px',
+                height: '30px',
+                padding: '0 10px',
+                fontSize: '12px',
                 fontWeight: sortField === 'avg_gpa' ? 700 : 500,
                 borderRadius: '6px',
                 border: '1px solid var(--border-color)',
@@ -609,8 +603,9 @@ function LeaderboardContent() {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '2px',
-                padding: '4px 8px',
-                fontSize: '11px',
+                height: '30px',
+                padding: '0 10px',
+                fontSize: '12px',
                 fontWeight: sortField === 'a_grade_ratio' ? 700 : 500,
                 borderRadius: '6px',
                 border: '1px solid var(--border-color)',
@@ -626,7 +621,7 @@ function LeaderboardContent() {
           </div>
         </div>
 
-        {/* 리더보드 테이블 카드 */}
+        {/* ================= 4단계: 리더보드 테이블/카드 컨테이너 ================= */}
         <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
           
           {loading ? (
@@ -635,14 +630,13 @@ function LeaderboardContent() {
             </div>
           ) : viewMode === 'univ' ? (
             
-            /* ================= 1. 대학교 리더보드 ================= */
+            /* ================= 대학교 리더보드 ================= */
             visibleUnivRankings.length === 0 ? (
               <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
                 해당 조건의 대학교 데이터가 없습니다.
               </div>
             ) : (
               <>
-                {/* [데스크톱 뷰] 7열 테이블 */}
                 <div className="desktop-view" style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', minWidth: '760px', tableLayout: 'fixed', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
@@ -719,7 +713,6 @@ function LeaderboardContent() {
                   </table>
                 </div>
 
-                {/* [모바일 뷰] 카드형 리스트 */}
                 <div className="mobile-view">
                   {visibleUnivRankings.map((row, index) => {
                     const isTopThree = index < 3;
@@ -793,14 +786,13 @@ function LeaderboardContent() {
             )
           ) : (
             
-            /* ================= 2. 학과별 리더보드 ================= */
+            /* ================= 학과별 리더보드 ================= */
             visibleDeptRankings.length === 0 ? (
               <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
                 선택한 조건과 일치하는 학과 데이터가 없습니다.
               </div>
             ) : (
               <>
-                {/* [데스크톱 뷰] 7열 테이블 */}
                 <div className="desktop-view" style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', minWidth: '780px', tableLayout: 'fixed', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
@@ -890,7 +882,6 @@ function LeaderboardContent() {
                   </table>
                 </div>
 
-                {/* [모바일 뷰] 카드형 리스트 */}
                 <div className="mobile-view">
                   {visibleDeptRankings.map((row, index) => {
                     const isTopThree = index < 3;
@@ -968,7 +959,7 @@ function LeaderboardContent() {
             )
           )}
 
-          {/* 하단 + 10개 더보기 버튼 영역 */}
+          {/* ================= 하단 더보기 버튼 ================= */}
           {!loading && hasMore && (
             <div style={{
               display: 'flex',
