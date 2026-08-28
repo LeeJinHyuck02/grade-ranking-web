@@ -281,7 +281,7 @@ function LeaderboardContent() {
 
   const renderSortIndicator = (field: SortField) => {
     if (sortField !== field) {
-      return <span style={{ opacity: 0.25, marginLeft: '4px', fontSize: '11px' }}>⇅</span>;
+      return <span style={{ opacity: 0.3, marginLeft: '4px', fontSize: '11px' }}>⇅</span>;
     }
     return (
       <span style={{ marginLeft: '4px', fontSize: '11px', color: 'var(--accent-blue)', fontWeight: 'bold' }}>
@@ -294,7 +294,7 @@ function LeaderboardContent() {
     const isCurrent = sortField === field;
     return {
       width,
-      padding: '14px 12px',
+      padding: '12px 10px',
       textAlign: 'right' as const,
       cursor: 'pointer',
       userSelect: 'none' as const,
@@ -308,7 +308,7 @@ function LeaderboardContent() {
   const getStaticHeaderStyle = (width: string, align: 'left' | 'center' | 'right' = 'left') => {
     return {
       width,
-      padding: '14px 12px',
+      padding: '12px 10px',
       textAlign: align,
       color: 'var(--text-secondary)',
       fontWeight: '600',
@@ -336,15 +336,15 @@ function LeaderboardContent() {
           display: none;
         }
 
-        /* 폼 요소 공통 클래스 */
+        /* 40px 컴팩트 정규화 폼 컨트롤 */
         .unified-form-control {
           display: block !important;
           box-sizing: border-box !important;
           width: 100% !important;
-          height: 46px !important;
-          min-height: 46px !important;
-          padding: 0 14px !important;
-          font-size: 16px !important;
+          height: 40px !important;
+          min-height: 40px !important;
+          padding: 0 12px !important;
+          font-size: 14px !important;
           line-height: normal !important;
           border: 1px solid var(--border-color) !important;
           border-radius: 8px !important;
@@ -352,31 +352,39 @@ function LeaderboardContent() {
           color: var(--text-primary) !important;
           outline: none !important;
           margin: 0 !important;
+          transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
         }
 
+        .unified-form-control:focus {
+          border-color: var(--accent-blue) !important;
+          box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2) !important;
+        }
+
+        /* 36px 슬림 세그먼트 토글 컨테이너 */
         .unified-toggle-container {
           display: flex !important;
           align-items: center !important;
           box-sizing: border-box !important;
-          height: 46px !important;
-          min-height: 46px !important;
-          background-color: var(--border-color) !important;
-          padding: 4px !important;
+          height: 40px !important;
+          min-height: 40px !important;
+          background-color: var(--table-header-bg) !important;
+          padding: 3px !important;
+          border: 1px solid var(--border-color) !important;
           border-radius: 8px !important;
-          gap: 4px !important;
+          gap: 3px !important;
         }
 
         @media (min-width: 769px) {
           .unified-toggle-container {
             width: fit-content !important;
-            min-width: 260px !important;
+            min-width: 230px !important;
           }
           .unified-input-wrapper {
             flex: 1 !important;
             min-width: 200px !important;
           }
           .unified-select-wrapper {
-            width: 180px !important;
+            width: 160px !important;
           }
         }
 
@@ -387,14 +395,14 @@ function LeaderboardContent() {
           .mobile-view {
             display: flex !important;
             flex-direction: column;
-            gap: 12px;
-            padding: 12px;
+            gap: 10px;
+            padding: 10px;
           }
           .mobile-sort-container {
             display: flex !important;
-            gap: 8px;
+            gap: 6px;
             width: 100%;
-            margin-top: 4px;
+            margin-top: 2px;
           }
           .control-panel-wrapper {
             flex-direction: column !important;
@@ -403,7 +411,7 @@ function LeaderboardContent() {
           .filter-group-wrapper {
             flex-direction: column !important;
             width: 100% !important;
-            gap: 10px !important;
+            gap: 8px !important;
           }
           .unified-toggle-container {
             width: 100% !important;
@@ -418,36 +426,45 @@ function LeaderboardContent() {
         }
       `}</style>
 
-      <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ maxWidth: '1120px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         
         {/* 상단 헤더 */}
-        <header style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <header style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 6px 0' }}>
-              대학 학점 리더보드
+            <h1 style={{ fontSize: '20px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '0 0 4px 0' }}>
+              전국 대학 학점 분석 및 랭킹 리더보드
             </h1>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-              대학알리미 공시 데이터 기반
+              대학알리미 공시 데이터를 기반으로 산출된 성적 통계 순위입니다.
             </p>
           </div>
           <ThemeToggle />
         </header>
 
-        {/* 1차 탭: 리더보드 뷰 모드 전환 */}
-        <div style={{ display: 'flex', borderBottom: '2px solid var(--border-color)', gap: '8px' }}>
+        {/* 1차 탭: 50:50 분할 세그먼트 컨트롤 */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          backgroundColor: 'var(--table-header-bg)',
+          padding: '4px',
+          borderRadius: '10px',
+          border: '1px solid var(--border-color)',
+          gap: '4px'
+        }}>
           <button
             onClick={() => handleViewModeChange('univ')}
             style={{
-              padding: '10px 18px',
+              padding: '9px 0',
               fontSize: '14px',
-              fontWeight: 'bold',
+              fontWeight: viewMode === 'univ' ? '700' : '500',
               border: 'none',
+              borderRadius: '7px',
               cursor: 'pointer',
-              backgroundColor: 'transparent',
+              backgroundColor: viewMode === 'univ' ? 'var(--card-bg)' : 'transparent',
               color: viewMode === 'univ' ? 'var(--accent-blue)' : 'var(--text-muted)',
-              borderBottom: viewMode === 'univ' ? '3px solid var(--accent-blue)' : '3px solid transparent',
-              marginBottom: '-2px',
-              transition: 'all 0.15s ease'
+              boxShadow: viewMode === 'univ' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+              transition: 'all 0.15s ease',
+              textAlign: 'center'
             }}
           >
             학교별 랭킹
@@ -455,26 +472,27 @@ function LeaderboardContent() {
           <button
             onClick={() => handleViewModeChange('dept')}
             style={{
-              padding: '10px 18px',
+              padding: '9px 0',
               fontSize: '14px',
-              fontWeight: 'bold',
+              fontWeight: viewMode === 'dept' ? '700' : '500',
               border: 'none',
+              borderRadius: '7px',
               cursor: 'pointer',
-              backgroundColor: 'transparent',
+              backgroundColor: viewMode === 'dept' ? 'var(--card-bg)' : 'transparent',
               color: viewMode === 'dept' ? 'var(--accent-blue)' : 'var(--text-muted)',
-              borderBottom: viewMode === 'dept' ? '3px solid var(--accent-blue)' : '3px solid transparent',
-              marginBottom: '-2px',
-              transition: 'all 0.15s ease'
+              boxShadow: viewMode === 'dept' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+              transition: 'all 0.15s ease',
+              textAlign: 'center'
             }}
           >
             학과별 랭킹
           </button>
         </div>
 
-        {/* 제어 패널 (완벽한 폭/높이 일치) */}
-        <div className="control-panel-wrapper" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        {/* 제어 패널 */}
+        <div className="control-panel-wrapper" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           
-          <div className="filter-group-wrapper" style={{ display: 'flex', gap: '10px', flex: 1, minWidth: '280px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <div className="filter-group-wrapper" style={{ display: 'flex', gap: '8px', flex: 1, minWidth: '280px', flexWrap: 'wrap', alignItems: 'center' }}>
             
             {viewMode === 'univ' && (
               <div className="unified-toggle-container">
@@ -484,10 +502,10 @@ function LeaderboardContent() {
                     className="unified-toggle-btn"
                     onClick={() => handleCourseFilterChange(type)}
                     style={{
-                      height: '38px',
-                      padding: '0 16px',
+                      height: '32px',
+                      padding: '0 12px',
                       fontSize: '13px',
-                      fontWeight: '600',
+                      fontWeight: courseFilter === type ? '700' : '500',
                       borderRadius: '6px',
                       border: 'none',
                       cursor: 'pointer',
@@ -567,21 +585,22 @@ function LeaderboardContent() {
             </div>
           </div>
 
-          {/* 모바일 전용 정렬 버튼 바 */}
+          {/* 모바일 전용 슬림 정렬 토글 바 */}
           <div className="mobile-sort-container">
             <button
               onClick={() => handleSort('avg_gpa')}
               style={{
                 flex: 1,
-                height: '44px',
+                height: '36px',
                 padding: '0 8px',
-                fontSize: '13px',
-                fontWeight: '600',
-                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: sortField === 'avg_gpa' ? '700' : '500',
+                borderRadius: '6px',
                 border: '1px solid var(--border-color)',
-                backgroundColor: sortField === 'avg_gpa' ? 'var(--border-color)' : 'var(--card-bg)',
+                backgroundColor: sortField === 'avg_gpa' ? 'var(--card-hover)' : 'var(--card-bg)',
                 color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-secondary)',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
               }}
             >
               평균 평점 {renderSortIndicator('avg_gpa')}
@@ -590,15 +609,16 @@ function LeaderboardContent() {
               onClick={() => handleSort('a_grade_ratio')}
               style={{
                 flex: 1,
-                height: '44px',
+                height: '36px',
                 padding: '0 8px',
-                fontSize: '13px',
-                fontWeight: '600',
-                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: sortField === 'a_grade_ratio' ? '700' : '500',
+                borderRadius: '6px',
                 border: '1px solid var(--border-color)',
-                backgroundColor: sortField === 'a_grade_ratio' ? 'var(--border-color)' : 'var(--card-bg)',
+                backgroundColor: sortField === 'a_grade_ratio' ? 'var(--card-hover)' : 'var(--card-bg)',
                 color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-secondary)',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                transition: 'all 0.15s ease'
               }}
             >
               A학점 비율 {renderSortIndicator('a_grade_ratio')}
@@ -630,7 +650,7 @@ function LeaderboardContent() {
         </div>
 
         {/* 리더보드 테이블 카드 */}
-        <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+        <div style={{ backgroundColor: 'var(--card-bg)', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
           
           {loading ? (
             <div style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '14px' }}>
@@ -649,8 +669,8 @@ function LeaderboardContent() {
                 <div className="desktop-view" style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', minWidth: '760px', tableLayout: 'fixed', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ borderBottom: '2px solid var(--border-color)', backgroundColor: 'var(--table-header-bg)', fontSize: '14px' }}>
-                        <th style={getStaticHeaderStyle('60px', 'center')}>순위</th>
+                      <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--table-header-bg)', fontSize: '13px' }}>
+                        <th style={getStaticHeaderStyle('55px', 'center')}>순위</th>
                         <th style={getStaticHeaderStyle('26%', 'left')}>학교명</th>
                         <th style={getStaticHeaderStyle('80px', 'center')}>구분</th>
                         <th style={getStaticHeaderStyle('14%', 'right')}>개설 학과 수</th>
@@ -674,45 +694,45 @@ function LeaderboardContent() {
                             style={{
                               borderBottom: '1px solid var(--border-color)',
                               cursor: 'pointer',
-                              fontSize: '14px',
+                              fontSize: '13px',
                               backgroundColor: 'var(--card-bg)',
                               transition: 'background-color 0.15s ease'
                             }}
                             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-hover)')}
                             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-bg)')}
                           >
-                            <td style={{ padding: '14px 12px', textAlign: 'center', fontWeight: 'bold' }}>
+                            <td style={{ padding: '12px 10px', textAlign: 'center', fontWeight: 'bold' }}>
                               <span style={{
                                 display: 'inline-block',
-                                width: '26px',
-                                height: '26px',
-                                lineHeight: '26px',
+                                width: '24px',
+                                height: '24px',
+                                lineHeight: '24px',
                                 borderRadius: '50%',
-                                backgroundColor: isTopThree ? 'var(--border-color)' : 'transparent',
+                                backgroundColor: isTopThree ? 'var(--table-header-bg)' : 'transparent',
                                 color: isTopThree ? 'var(--accent-blue)' : 'var(--text-muted)',
-                                fontSize: '13px'
+                                fontSize: '12px'
                               }}>
                                 {index + 1}
                               </span>
                             </td>
-                            <td title={cleanUniv} style={{ ...ellipsisCellStyle, padding: '14px 12px', fontWeight: '600', color: 'var(--text-primary)', fontSize: '15px' }}>
+                            <td title={cleanUniv} style={{ ...ellipsisCellStyle, padding: '12px 10px', fontWeight: '600', color: 'var(--text-primary)', fontSize: '14px' }}>
                               {cleanUniv}
                             </td>
-                            <td style={{ padding: '14px 12px', textAlign: 'center' }}>
-                              <span style={{ fontSize: '12px', padding: '2px 8px', borderRadius: '4px', backgroundColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
+                            <td style={{ padding: '12px 10px', textAlign: 'center' }}>
+                              <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'var(--table-header-bg)', color: 'var(--text-secondary)' }}>
                                 {row.course_type}
                               </span>
                             </td>
-                            <td style={{ padding: '14px 12px', textAlign: 'right', color: 'var(--text-secondary)' }}>
+                            <td style={{ padding: '12px 10px', textAlign: 'right', color: 'var(--text-secondary)' }}>
                               {row.course_type === '교양' ? '-' : `${row.total_depts}개`}
                             </td>
-                            <td style={{ padding: '14px 12px', textAlign: 'right', fontWeight: sortField === 'avg_gpa' ? 'bold' : 'normal', color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)' }}>
-                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
+                            <td style={{ padding: '12px 10px', textAlign: 'right', fontWeight: sortField === 'avg_gpa' ? 'bold' : 'normal', color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)' }}>
+                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
                             </td>
-                            <td style={{ padding: '14px 12px', textAlign: 'right', fontWeight: sortField === 'a_grade_ratio' ? 'bold' : 'normal', color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)' }}>
+                            <td style={{ padding: '12px 10px', textAlign: 'right', fontWeight: sortField === 'a_grade_ratio' ? 'bold' : 'normal', color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)' }}>
                               {row.a_grade_ratio !== null ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
                             </td>
-                            <td style={{ padding: '14px 12px', textAlign: 'right', color: 'var(--text-secondary)' }}>
+                            <td style={{ padding: '12px 10px', textAlign: 'right', color: 'var(--text-secondary)' }}>
                               {(row.total_students || 0).toLocaleString()}명
                             </td>
                           </tr>
@@ -735,53 +755,54 @@ function LeaderboardContent() {
                           backgroundColor: 'var(--card-bg)',
                           border: '1px solid var(--border-color)',
                           borderRadius: '8px',
-                          padding: '14px',
+                          padding: '12px',
                           cursor: 'pointer',
                           display: 'flex',
                           flexDirection: 'column',
-                          gap: '10px'
+                          gap: '8px',
+                          transition: 'background-color 0.15s ease'
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{
                               display: 'inline-block',
-                              width: '24px',
-                              height: '24px',
-                              lineHeight: '24px',
+                              width: '22px',
+                              height: '22px',
+                              lineHeight: '22px',
                               textAlign: 'center',
                               borderRadius: '50%',
-                              backgroundColor: isTopThree ? 'var(--border-color)' : 'transparent',
+                              backgroundColor: isTopThree ? 'var(--table-header-bg)' : 'transparent',
                               color: isTopThree ? 'var(--accent-blue)' : 'var(--text-muted)',
                               fontSize: '12px',
                               fontWeight: 'bold'
                             }}>
                               {index + 1}
                             </span>
-                            <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                               {cleanUniv}
                             </span>
                           </div>
-                          <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>
+                          <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'var(--table-header-bg)', color: 'var(--text-secondary)' }}>
                             {row.course_type}
                           </span>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', backgroundColor: 'var(--table-header-bg)', padding: '10px', borderRadius: '6px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', backgroundColor: 'var(--table-header-bg)', padding: '8px', borderRadius: '6px' }}>
                           <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>평균 평점</div>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '1px' }}>평균 평점</div>
                             <div style={{ fontSize: '13px', fontWeight: 'bold', color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)' }}>
                               {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'}
                             </div>
                           </div>
                           <div style={{ textAlign: 'center', borderLeft: '1px solid var(--border-color)', borderRight: '1px solid var(--border-color)' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>A학점 비율</div>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '1px' }}>A학점 비율</div>
                             <div style={{ fontSize: '13px', fontWeight: 'bold', color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)' }}>
                               {row.a_grade_ratio !== null ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
                             </div>
                           </div>
                           <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>수강 학생</div>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '1px' }}>수강 학생</div>
                             <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
                               {(row.total_students || 0).toLocaleString()}명
                             </div>
@@ -806,7 +827,7 @@ function LeaderboardContent() {
                 <div className="desktop-view" style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', minWidth: '780px', tableLayout: 'fixed', textAlign: 'left', borderCollapse: 'collapse' }}>
                     <thead>
-                      <tr style={{ borderBottom: '2px solid var(--border-color)', backgroundColor: 'var(--table-header-bg)', fontSize: '14px' }}>
+                      <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--table-header-bg)', fontSize: '13px' }}>
                         <th style={getStaticHeaderStyle('55px', 'center')}>순위</th>
                         <th style={getStaticHeaderStyle('18%', 'left')}>학교명</th>
                         <th style={getStaticHeaderStyle('18%', 'left')}>단과대학</th>
@@ -834,47 +855,47 @@ function LeaderboardContent() {
                             style={{
                               borderBottom: '1px solid var(--border-color)',
                               cursor: 'pointer',
-                              fontSize: '14px',
+                              fontSize: '13px',
                               backgroundColor: 'var(--card-bg)',
                               transition: 'background-color 0.15s ease'
                             }}
                             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-hover)')}
                             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--card-bg)')}
                           >
-                            <td style={{ padding: '14px 10px', textAlign: 'center', fontWeight: 'bold' }}>
+                            <td style={{ padding: '12px 10px', textAlign: 'center', fontWeight: 'bold' }}>
                               <span style={{
                                 display: 'inline-block',
-                                width: '26px',
-                                height: '26px',
-                                lineHeight: '26px',
+                                width: '24px',
+                                height: '24px',
+                                lineHeight: '24px',
                                 borderRadius: '50%',
-                                backgroundColor: isTopThree ? 'var(--border-color)' : 'transparent',
+                                backgroundColor: isTopThree ? 'var(--table-header-bg)' : 'transparent',
                                 color: isTopThree ? 'var(--accent-blue)' : 'var(--text-muted)',
-                                fontSize: '13px'
+                                fontSize: '12px'
                               }}>
                                 {index + 1}
                               </span>
                             </td>
-                            <td title={cleanUniv} style={{ ...ellipsisCellStyle, padding: '14px 10px', color: 'var(--text-secondary)' }}>
+                            <td title={cleanUniv} style={{ ...ellipsisCellStyle, padding: '12px 10px', color: 'var(--text-secondary)' }}>
                               {cleanUniv}
                             </td>
-                            <td title={cleanCollege} style={{ ...ellipsisCellStyle, padding: '14px 10px', color: 'var(--text-muted)' }}>
+                            <td title={cleanCollege} style={{ ...ellipsisCellStyle, padding: '12px 10px', color: 'var(--text-muted)' }}>
                               {cleanCollege}
                             </td>
-                            <td title={cleanDept} style={{ ...ellipsisCellStyle, padding: '14px 10px', fontWeight: '600', color: 'var(--text-primary)' }}>
+                            <td title={cleanDept} style={{ ...ellipsisCellStyle, padding: '12px 10px', fontWeight: '600', color: 'var(--text-primary)' }}>
                               {cleanDept}
                             </td>
                             <td style={{
-                              padding: '14px 10px',
+                              padding: '12px 10px',
                               textAlign: 'right',
                               fontWeight: sortField === 'avg_gpa' ? 'bold' : 'normal',
                               color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)',
                               whiteSpace: 'nowrap'
                             }}>
-                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
+                              {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'} <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'normal' }}>/ 4.3</span>
                             </td>
                             <td style={{
-                              padding: '14px 10px',
+                              padding: '12px 10px',
                               textAlign: 'right',
                               fontWeight: sortField === 'a_grade_ratio' ? 'bold' : 'normal',
                               color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)',
@@ -882,7 +903,7 @@ function LeaderboardContent() {
                             }}>
                               {row.a_grade_ratio !== null && row.a_grade_ratio !== undefined ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
                             </td>
-                            <td style={{ padding: '14px 10px', textAlign: 'right', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
+                            <td style={{ padding: '12px 10px', textAlign: 'right', color: 'var(--text-secondary)', whiteSpace: 'nowrap' }}>
                               {(row.total_students || 0).toLocaleString()}명
                             </td>
                           </tr>
@@ -908,22 +929,23 @@ function LeaderboardContent() {
                           backgroundColor: 'var(--card-bg)',
                           border: '1px solid var(--border-color)',
                           borderRadius: '8px',
-                          padding: '14px',
+                          padding: '12px',
                           cursor: 'pointer',
                           display: 'flex',
                           flexDirection: 'column',
-                          gap: '10px'
+                          gap: '8px',
+                          transition: 'background-color 0.15s ease'
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                           <span style={{
                             display: 'inline-block',
-                            width: '24px',
-                            height: '24px',
-                            lineHeight: '24px',
+                            width: '22px',
+                            height: '22px',
+                            lineHeight: '22px',
                             textAlign: 'center',
                             borderRadius: '50%',
-                            backgroundColor: isTopThree ? 'var(--border-color)' : 'transparent',
+                            backgroundColor: isTopThree ? 'var(--table-header-bg)' : 'transparent',
                             color: isTopThree ? 'var(--accent-blue)' : 'var(--text-muted)',
                             fontSize: '12px',
                             fontWeight: 'bold',
@@ -932,7 +954,7 @@ function LeaderboardContent() {
                             {index + 1}
                           </span>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '2px' }}>
+                            <div style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '1px' }}>
                               {cleanDept}
                             </div>
                             <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
@@ -941,21 +963,21 @@ function LeaderboardContent() {
                           </div>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', backgroundColor: 'var(--table-header-bg)', padding: '10px', borderRadius: '6px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '6px', backgroundColor: 'var(--table-header-bg)', padding: '8px', borderRadius: '6px' }}>
                           <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>평균 평점</div>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '1px' }}>평균 평점</div>
                             <div style={{ fontSize: '13px', fontWeight: 'bold', color: sortField === 'avg_gpa' ? 'var(--accent-blue)' : 'var(--text-primary)' }}>
                               {row.avg_gpa ? row.avg_gpa.toFixed(2) : '0.00'}
                             </div>
                           </div>
                           <div style={{ textAlign: 'center', borderLeft: '1px solid var(--border-color)', borderRight: '1px solid var(--border-color)' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>A학점 비율</div>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '1px' }}>A학점 비율</div>
                             <div style={{ fontSize: '13px', fontWeight: 'bold', color: sortField === 'a_grade_ratio' ? 'var(--accent-green)' : 'var(--text-primary)' }}>
                               {row.a_grade_ratio !== null ? `${row.a_grade_ratio.toFixed(1)}%` : '-'}
                             </div>
                           </div>
                           <div style={{ textAlign: 'center' }}>
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '2px' }}>총 수강생</div>
+                            <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '1px' }}>총 수강생</div>
                             <div style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '600' }}>
                               {(row.total_students || 0).toLocaleString()}명
                             </div>
@@ -975,7 +997,7 @@ function LeaderboardContent() {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              padding: '16px',
+              padding: '14px',
               borderTop: '1px solid var(--border-color)',
               backgroundColor: 'var(--table-header-bg)'
             }}>
@@ -987,9 +1009,9 @@ function LeaderboardContent() {
                   justifyContent: 'center',
                   gap: '6px',
                   width: '100%',
-                  maxWidth: '320px',
-                  padding: '12px 20px',
-                  fontSize: '14px',
+                  maxWidth: '300px',
+                  padding: '10px 16px',
+                  fontSize: '13px',
                   fontWeight: '600',
                   border: '1px solid var(--border-color)',
                   borderRadius: '8px',

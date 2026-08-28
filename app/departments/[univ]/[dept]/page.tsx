@@ -231,37 +231,6 @@ function DepartmentDetailContent() {
                 </div>
               </div>
             </div>
-
-            {/* 선 그래프 카드 */}
-            <div style={{ backgroundColor: 'var(--card-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border-color)', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', width: '100%', boxSizing: 'border-box', overflow: 'hidden' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '6px' }}>
-                <h2 style={{ fontSize: '16px', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>학기별 평균 평점 추이</h2>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>* 터치 스크롤 지원</span>
-              </div>
-
-              {/* 가로 스크롤 래퍼 */}
-              <div style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '4px' }}>
-                <div style={{ minWidth: '460px', height: '300px' }}>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={lineChartData} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={chartGridColor} />
-                      <XAxis dataKey="semester" stroke={chartAxisColor} tick={{ fontSize: 11 }} />
-                      <YAxis domain={[0, 4.3]} stroke={chartAxisColor} tick={{ fontSize: 11 }} />
-                      <Tooltip 
-                        contentStyle={{
-                          backgroundColor: 'var(--card-bg)',
-                          borderColor: 'var(--border-color)',
-                          borderRadius: '8px',
-                          color: 'var(--text-primary)'
-                        }}
-                      />
-                      <Line type="monotone" dataKey="avg_gpa" stroke="var(--accent-green)" strokeWidth={3} dot={{ r: 4 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-
           </div>
         )}
 
