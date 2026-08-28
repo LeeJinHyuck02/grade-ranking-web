@@ -254,9 +254,6 @@ export default function UniversityDetailPage() {
         {/* 상단 네비게이션 헤더 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', gap: '12px' }}>
           <div style={{ minWidth: 0 }}>
-            <a href="/" style={{ fontSize: '13px', color: 'var(--accent-blue)', textDecoration: 'none', marginBottom: '6px', display: 'inline-block', fontWeight: '500' }}>
-              ← 전체 리더보드로 돌아가기
-            </a>
             <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '2px 0 0 0', wordBreak: 'keep-all' }}>
               {univName} 종합 학점 분석 리포트
             </h1>

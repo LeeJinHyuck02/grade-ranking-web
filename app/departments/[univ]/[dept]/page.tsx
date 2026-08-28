@@ -168,23 +168,6 @@ function DepartmentDetailContent() {
         {/* 상단 네비게이션 */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', gap: '12px' }}>
           <div style={{ minWidth: 0 }}>
-            <button
-              onClick={handleGoBack}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                fontSize: '13px',
-                color: 'var(--accent-blue)',
-                cursor: 'pointer',
-                marginBottom: '6px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                fontWeight: '600'
-              }}
-            >
-              {fromSource === 'univ' ? `← ${univName} 종합 리포트로 돌아가기` : '← 전체 랭킹으로 돌아가기'}
-            </button>
             <span style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--text-muted)', marginTop: '2px' }}>{univName}</span>
             <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: 'var(--text-primary)', margin: '2px 0 0 0', wordBreak: 'keep-all' }}>
               {deptName} 학점 분석 리포트

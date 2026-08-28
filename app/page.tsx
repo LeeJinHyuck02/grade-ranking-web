@@ -322,20 +322,6 @@ function LeaderboardContent() {
     whiteSpace: 'nowrap' as const
   };
 
-  // 48px 표준 규격 폼 컨트롤 스타일
-  const formControlBaseStyle = {
-    boxSizing: 'border-box' as const,
-    height: '48px',
-    padding: '0 14px',
-    fontSize: '14px',
-    border: '1px solid var(--border-color)',
-    borderRadius: '8px',
-    backgroundColor: 'var(--card-bg)',
-    color: 'var(--text-primary)',
-    outline: 'none',
-    margin: 0
-  };
-
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '24px 12px', transition: 'background-color 0.2s' }}>
       
@@ -348,6 +334,50 @@ function LeaderboardContent() {
         }
         .mobile-sort-container {
           display: none;
+        }
+
+        /* 폼 요소 공통 클래스 */
+        .unified-form-control {
+          display: block !important;
+          box-sizing: border-box !important;
+          width: 100% !important;
+          height: 46px !important;
+          min-height: 46px !important;
+          padding: 0 14px !important;
+          font-size: 14px !important;
+          line-height: normal !important;
+          border: 1px solid var(--border-color) !important;
+          border-radius: 8px !important;
+          background-color: var(--card-bg) !important;
+          color: var(--text-primary) !important;
+          outline: none !important;
+          margin: 0 !important;
+        }
+
+        .unified-toggle-container {
+          display: flex !important;
+          align-items: center !important;
+          box-sizing: border-box !important;
+          height: 46px !important;
+          min-height: 46px !important;
+          background-color: var(--border-color) !important;
+          padding: 4px !important;
+          border-radius: 8px !important;
+          gap: 4px !important;
+        }
+
+        @media (min-width: 769px) {
+          .unified-toggle-container {
+            width: fit-content !important;
+            min-width: 260px !important;
+          }
+          .unified-input-wrapper {
+            flex: 1 !important;
+            min-width: 200px !important;
+          }
+          .unified-select-wrapper {
+            width: 180px !important;
+          }
         }
 
         @media (max-width: 768px) {
@@ -375,13 +405,15 @@ function LeaderboardContent() {
             width: 100% !important;
             gap: 10px !important;
           }
-          .filter-group-wrapper select,
-          .filter-group-wrapper input {
+          .unified-toggle-container {
             width: 100% !important;
-            min-width: 100% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-            height: 48px !important;
+          }
+          .unified-toggle-btn {
+            flex: 1 !important;
+          }
+          .unified-input-wrapper,
+          .unified-select-wrapper {
+            width: 100% !important;
           }
         }
       `}</style>
@@ -439,19 +471,20 @@ function LeaderboardContent() {
           </button>
         </div>
 
-        {/* 제어 패널 (48px 정규 규격 적용) */}
+        {/* 제어 패널 (완벽한 폭/높이 일치) */}
         <div className="control-panel-wrapper" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           
           <div className="filter-group-wrapper" style={{ display: 'flex', gap: '10px', flex: 1, minWidth: '280px', flexWrap: 'wrap', alignItems: 'center' }}>
             
             {viewMode === 'univ' && (
-              <div style={{ display: 'flex', gap: '4px', backgroundColor: 'var(--border-color)', padding: '4px', borderRadius: '8px', width: 'fit-content', height: '48px', boxSizing: 'border-box', alignItems: 'center' }}>
+              <div className="unified-toggle-container">
                 {(['전체', '전공', '교양'] as const).map((type) => (
                   <button
                     key={type}
+                    className="unified-toggle-btn"
                     onClick={() => handleCourseFilterChange(type)}
                     style={{
-                      height: '40px',
+                      height: '38px',
                       padding: '0 16px',
                       fontSize: '13px',
                       fontWeight: '600',
@@ -460,7 +493,9 @@ function LeaderboardContent() {
                       cursor: 'pointer',
                       backgroundColor: courseFilter === type ? 'var(--card-bg)' : 'transparent',
                       color: courseFilter === type ? 'var(--accent-blue)' : 'var(--text-muted)',
-                      boxShadow: courseFilter === type ? '0 1px 2px rgba(0,0,0,0.1)' : 'none'
+                      boxShadow: courseFilter === type ? '0 1px 2px rgba(0,0,0,0.1)' : 'none',
+                      transition: 'all 0.15s ease',
+                      whiteSpace: 'nowrap'
                     }}
                   >
                     {type === '전체' ? '전체 교과' : `${type}만`}
@@ -471,65 +506,65 @@ function LeaderboardContent() {
 
             {viewMode === 'dept' && (
               <>
-                <select
-                  value={selectedUniv}
-                  onChange={(e) => handleUnivChange(e.target.value)}
-                  style={{
-                    ...formControlBaseStyle,
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value="ALL">전체 대학교</option>
-                  {universityList.map((univ) => (
-                    <option key={univ} value={univ}>{univ}</option>
-                  ))}
-                </select>
+                <div className="unified-select-wrapper">
+                  <select
+                    className="unified-form-control"
+                    value={selectedUniv}
+                    onChange={(e) => handleUnivChange(e.target.value)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <option value="ALL">전체 대학교</option>
+                    {universityList.map((univ) => (
+                      <option key={univ} value={univ}>{univ}</option>
+                    ))}
+                  </select>
+                </div>
 
-                <select
-                  value={selectedCollege}
-                  onChange={(e) => handleCollegeChange(e.target.value)}
-                  disabled={collegeList.length === 0}
-                  style={{
-                    ...formControlBaseStyle,
-                    cursor: collegeList.length === 0 ? 'not-allowed' : 'pointer',
-                    opacity: collegeList.length === 0 ? 0.6 : 1
-                  }}
-                >
-                  <option value="ALL">{collegeList.length === 0 ? '단과대학 없음' : '전체 단과대학'}</option>
-                  {collegeList.map((col) => (
-                    <option key={col} value={col}>{col}</option>
-                  ))}
-                </select>
+                <div className="unified-select-wrapper">
+                  <select
+                    className="unified-form-control"
+                    value={selectedCollege}
+                    onChange={(e) => handleCollegeChange(e.target.value)}
+                    disabled={collegeList.length === 0}
+                    style={{
+                      cursor: collegeList.length === 0 ? 'not-allowed' : 'pointer',
+                      opacity: collegeList.length === 0 ? 0.6 : 1
+                    }}
+                  >
+                    <option value="ALL">{collegeList.length === 0 ? '단과대학 없음' : '전체 단과대학'}</option>
+                    {collegeList.map((col) => (
+                      <option key={col} value={col}>{col}</option>
+                    ))}
+                  </select>
+                </div>
 
-                <select
-                  value={minStudents}
-                  onChange={(e) => handleMinStudentsChange(Number(e.target.value))}
-                  style={{
-                    ...formControlBaseStyle,
-                    cursor: 'pointer'
-                  }}
-                >
-                  <option value={0}>수강 인원 전체</option>
-                  <option value={30}>30명 이상</option>
-                  <option value={50}>50명 이상</option>
-                  <option value={100}>100명 이상</option>
-                  <option value={200}>200명 이상</option>
-                  <option value={500}>500명 이상</option>
-                </select>
+                <div className="unified-select-wrapper">
+                  <select
+                    className="unified-form-control"
+                    value={minStudents}
+                    onChange={(e) => handleMinStudentsChange(Number(e.target.value))}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <option value={0}>수강 인원 전체</option>
+                    <option value={30}>30명 이상</option>
+                    <option value={50}>50명 이상</option>
+                    <option value={100}>100명 이상</option>
+                    <option value={200}>200명 이상</option>
+                    <option value={500}>500명 이상</option>
+                  </select>
+                </div>
               </>
             )}
 
-            <input
-              type="text"
-              placeholder={viewMode === 'univ' ? '학교명 검색' : '학과명 또는 키워드 검색'}
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              style={{
-                ...formControlBaseStyle,
-                flex: 1,
-                minWidth: '180px'
-              }}
-            />
+            <div className="unified-input-wrapper">
+              <input
+                type="text"
+                className="unified-form-control"
+                placeholder={viewMode === 'univ' ? '학교명 검색' : '학과명 또는 키워드 검색'}
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+              />
+            </div>
           </div>
 
           {/* 모바일 전용 정렬 버튼 바 */}
