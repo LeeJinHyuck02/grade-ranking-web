@@ -22,7 +22,7 @@ interface GpaPercentileCalculatorProps {
   defaultOpen?: boolean;
 }
 
-export function GpaPercentileCalculator({ univRankings, defaultOpen = true }: GpaPercentileCalculatorProps) {
+export function GpaPercentileCalculator({ univRankings, defaultOpen = false }: GpaPercentileCalculatorProps) {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -187,55 +187,56 @@ export function GpaPercentileCalculator({ univRankings, defaultOpen = true }: Gp
       `}</style>
 
       {/* 1. 세련된 아코디언 토글 헤더 */}
-      {/* 1. 세련된 아코디언 토글 헤더 (토글 버튼을 제목 바로 옆에 자연스럽게 배치) */}
+      {/* 1. 세련된 아코디언 토글 헤더 (토글 버튼을 우측 끝에 배치) */}
       <div
         className="calc-header-btn"
         onClick={() => setIsOpen(!isOpen)}
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          justifyContent: 'space-between',
           cursor: 'pointer',
           userSelect: 'none',
-          width: 'fit-content'
+          width: '100%'
         }}
       >
-        <div
-          className="calc-icon-box"
-          style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
-            backgroundColor: isDark ? 'rgba(96, 165, 250, 0.15)' : 'rgba(37, 99, 235, 0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '16px',
-            flexShrink: 0,
-            transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
-          }}
-        >
-          🎯
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div
+            className="calc-icon-box"
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
+              backgroundColor: isDark ? 'rgba(96, 165, 250, 0.15)' : 'rgba(37, 99, 235, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '16px',
+              flexShrink: 0,
+              transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            }}
+          >
+            🎯
+          </div>
+          <h2 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', margin: 0, whiteSpace: 'nowrap' }}>
+            학점 백분위 변환기
+          </h2>
         </div>
-        <h2 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', margin: 0, whiteSpace: 'nowrap' }}>
-          학점 백분위 변환기
-        </h2>
 
-        {/* 토글 화살표 버튼: 제목 바로 옆에 일체형으로 배치 */}
+        {/* 토글 화살표 버튼: 가장 우측에 배치 */}
         <div
           className="calc-toggle-pill"
           style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            width: '26px',
-            height: '26px',
+            width: '28px',
+            height: '28px',
             color: 'var(--text-secondary)',
             backgroundColor: 'var(--table-header-bg)',
             border: '1px solid var(--border-color)',
             borderRadius: '6px',
             transition: 'all 0.2s ease',
-            marginLeft: '2px',
             flexShrink: 0
           }}
         >

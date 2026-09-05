@@ -61,7 +61,7 @@ function HomeContent() {
             <>
               {/* 학점 백분위 변환기 (자체 애니메이션 아코디언 토글 내장) */}
               <div style={{ width: '100%', marginBottom: '16px' }}>
-                <GpaPercentileCalculator univRankings={univRankings} defaultOpen={true} />
+                <GpaPercentileCalculator univRankings={univRankings} defaultOpen={false} />
               </div>
 
               {/* 리더보드 직접 렌더링 */}
