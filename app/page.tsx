@@ -1,12 +1,12 @@
 ﻿'use client';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState, Suspense } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Navbar } from '@/components/Navbar';
 import { GpaPercentileCalculator, UnivRankingItem } from '@/components/GpaPercentileCalculator';
+import { LeaderboardSection } from '@/components/LeaderboardSection';
 
-export default function HomePage() {
+function HomeContent() {
   const [univRankings, setUnivRankings] = useState<UnivRankingItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -24,12 +24,21 @@ export default function HomePage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '16px 12px', transition: 'background-color 0.2s' }}>
-      <div style={{ maxWidth: '780px', margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
+      <div
+        style={{
+          maxWidth: '1120px',
+          width: '100%',
+          margin: '0 auto',
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'max-width 0.25s ease'
+        }}
+      >
         {/* 상단 네비게이션 */}
         <Navbar />
 
-        {/* 메인 계산기 영역 */}
-        <main>
+        {/* 메인 영역 */}
+        <main style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           {loading ? (
             <div
               style={{
@@ -39,81 +48,44 @@ export default function HomePage() {
                 padding: '40px 20px',
                 textAlign: 'center',
                 color: 'var(--text-muted)',
-                fontSize: '14px'
+                fontSize: '14px',
+                maxWidth: '780px',
+                margin: '0 auto',
+                width: '100%',
+                boxSizing: 'border-box'
               }}
             >
               대학교 성적 데이터를 불러오는 중입니다...
             </div>
           ) : (
             <>
-              <GpaPercentileCalculator univRankings={univRankings} />
+              {/* 학점 백분위 변환기 (자체 애니메이션 아코디언 토글 내장) */}
+              <div style={{ width: '100%', marginBottom: '16px' }}>
+                <GpaPercentileCalculator univRankings={univRankings} defaultOpen={true} />
+              </div>
 
-              {/* 하단 리더보드 이동 카드/버튼 */}
-              <Link
-                href="/leaderboard"
-                style={{
-                  marginTop: '16px',
-                  padding: '16px 20px',
-                  backgroundColor: 'var(--card-bg)',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  textDecoration: 'none',
-                  transition: 'all 0.15s ease',
-                  boxShadow: '0 2px 5px rgba(0,0,0,0.04)'
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div
-                    style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '8px',
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '18px',
-                      flexShrink: 0
-                    }}
-                  >
-                    🏆
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                      전국 대학교 학점 리더보드
-                    </div>
-                    <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                      4.3 / 4.5 만점 체계별 대학교 및 학과 순위 한눈에 확인하기
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    color: 'var(--accent-blue)',
-                    backgroundColor: 'var(--table-header-bg)',
-                    padding: '8px 14px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border-color)',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  <span>순위 보러가기</span>
-                  <span>→</span>
-                </div>
-              </Link>
+              {/* 리더보드 직접 렌더링 */}
+              <div style={{ width: '100%' }}>
+                <LeaderboardSection />
+              </div>
             </>
           )}
         </main>
       </div>
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-muted)' }}>
+          페이지를 불러오는 중입니다...
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
   );
 }

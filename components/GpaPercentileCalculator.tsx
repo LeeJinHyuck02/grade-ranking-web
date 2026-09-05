@@ -19,12 +19,14 @@ export interface UnivRankingItem {
 
 interface GpaPercentileCalculatorProps {
   univRankings: UnivRankingItem[];
+  defaultOpen?: boolean;
 }
 
-export function GpaPercentileCalculator({ univRankings }: GpaPercentileCalculatorProps) {
+export function GpaPercentileCalculator({ univRankings, defaultOpen = true }: GpaPercentileCalculatorProps) {
   const router = useRouter();
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen] = useState(defaultOpen);
 
   // '전체' 교과목 기준 대학 목록만 추출 (가나다순 정렬)
   const uniqueUnivs = useMemo(() => {
@@ -152,17 +154,19 @@ export function GpaPercentileCalculator({ univRankings }: GpaPercentileCalculato
         backgroundColor: 'var(--card-bg)',
         borderRadius: '14px',
         border: '1px solid var(--border-color)',
-        padding: '16px 18px',
-        boxShadow: '0 2px 10px -2px rgba(0, 0, 0, 0.05)',
+        padding: '14px 18px',
+        boxShadow: isOpen
+          ? '0 2px 10px -2px rgba(0, 0, 0, 0.05)'
+          : '0 2px 6px -1px rgba(0, 0, 0, 0.04)',
         display: 'flex',
         flexDirection: 'column',
-        gap: '12px',
         boxSizing: 'border-box',
         width: '100%',
-        marginBottom: '16px'
+        marginBottom: '0',
+        transition: 'box-shadow 0.25s ease, border-color 0.2s ease'
       }}
     >
-      {/* input number의 스피너(상하 화살표) 완전 제거 스타일 */}
+      {/* input number의 스피너(상하 화살표) 완전 제거 및 호버 스타일 */}
       <style>{`
         .no-spin-arrows::-webkit-inner-spin-button,
         .no-spin-arrows::-webkit-outer-spin-button {
@@ -172,15 +176,100 @@ export function GpaPercentileCalculator({ univRankings }: GpaPercentileCalculato
         .no-spin-arrows {
           -moz-appearance: textfield !important;
         }
+        .calc-header-btn:hover .calc-toggle-pill {
+          background-color: var(--card-hover) !important;
+          border-color: var(--accent-blue) !important;
+          color: var(--accent-blue) !important;
+        }
+        .calc-header-btn:hover .calc-icon-box {
+          transform: scale(1.06);
+        }
       `}</style>
 
-      {/* 1. 심플 헤더 (최상단 만점 텍스트 삭제) */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <span style={{ fontSize: '17px' }}>🎯</span>
-        <h2 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', margin: 0 }}>
-          내 학점 백분위 계산기
+      {/* 1. 세련된 아코디언 토글 헤더 */}
+      {/* 1. 세련된 아코디언 토글 헤더 (토글 버튼을 제목 바로 옆에 자연스럽게 배치) */}
+      <div
+        className="calc-header-btn"
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          cursor: 'pointer',
+          userSelect: 'none',
+          width: 'fit-content'
+        }}
+      >
+        <div
+          className="calc-icon-box"
+          style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '8px',
+            backgroundColor: isDark ? 'rgba(96, 165, 250, 0.15)' : 'rgba(37, 99, 235, 0.1)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '16px',
+            flexShrink: 0,
+            transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)'
+          }}
+        >
+          🎯
+        </div>
+        <h2 style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', margin: 0, whiteSpace: 'nowrap' }}>
+          학점 백분위 변환기
         </h2>
+
+        {/* 토글 화살표 버튼: 제목 바로 옆에 일체형으로 배치 */}
+        <div
+          className="calc-toggle-pill"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '26px',
+            height: '26px',
+            color: 'var(--text-secondary)',
+            backgroundColor: 'var(--table-header-bg)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '6px',
+            transition: 'all 0.2s ease',
+            marginLeft: '2px',
+            flexShrink: 0
+          }}
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.32s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
       </div>
+
+      {/* 2. 부드러운 CSS Grid 아코디언 애니메이션 컨테이너 */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateRows: isOpen ? '1fr' : '0fr',
+          transition: 'grid-template-rows 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease',
+          opacity: isOpen ? 1 : 0
+        }}
+      >
+        <div style={{ overflow: 'hidden', minHeight: 0 }}>
+          <div style={{ height: '1px', backgroundColor: 'var(--border-color)', margin: '14px 0 16px 0' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 
       {/* 2. 대학교 선택 / 취득 학점 / 백분위 확인 버튼 1행 정렬 (학교 옆 만점 문구 삭제) */}
       <div
@@ -222,10 +311,10 @@ export function GpaPercentileCalculator({ univRankings }: GpaPercentileCalculato
           </select>
         </div>
 
-        {/* 내 학점 입력 */}
+        {/* 내 학점 입력 (최대 학점 표시) */}
         <div style={{ flex: '1', minWidth: 0, display: 'flex', flexDirection: 'column', gap: '3px' }}>
           <label style={{ fontSize: '11px', fontWeight: '600', color: 'var(--text-secondary)' }}>
-            취득 학점
+            취득 학점 ({maxGpa} 만점)
           </label>
           <input
             type="number"
@@ -314,10 +403,9 @@ export function GpaPercentileCalculator({ univRankings }: GpaPercentileCalculato
           <div
             style={{
               display: 'flex',
-              justifyContent: 'space-between',
               alignItems: 'baseline',
-              flexWrap: 'wrap',
-              gap: '8px'
+              gap: '16px',
+              flexWrap: 'wrap'
             }}
           >
             <span
@@ -513,6 +601,9 @@ export function GpaPercentileCalculator({ univRankings }: GpaPercentileCalculato
           </div>
         </div>
       )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

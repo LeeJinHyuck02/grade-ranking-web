@@ -39,19 +39,9 @@ export function Navbar() {
         >
           🎓
         </div>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-            <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
-              학점랭크
-            </span>
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--accent-blue)', letterSpacing: '-0.2px' }}>
-              UnivRank
-            </span>
-          </div>
-          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
-            대학알리미 공식 데이터 기반
-          </p>
-        </div>
+        <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>
+          학점 모아보기
+        </span>
       </Link>
 
       {/* 우측 컨트롤 (홈이 아닐 때는 계산기 바로가기 제공 + 테마 토글) */}
@@ -76,7 +66,7 @@ export function Navbar() {
             }}
           >
             <span>🎯</span>
-            <span>백분위 계산기</span>
+            <span>학점 백분위 변환기</span>
           </Link>
         )}
 
