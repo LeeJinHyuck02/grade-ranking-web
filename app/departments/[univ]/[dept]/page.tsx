@@ -165,7 +165,7 @@ function DepartmentDetailContent() {
     if (fromSource === 'univ') {
       router.push(`/universities/${encodeURIComponent(univName)}`);
     } else {
-      router.push('/');
+      router.push('/leaderboard');
     }
   };
 
